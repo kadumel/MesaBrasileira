@@ -1,0 +1,23 @@
+{% load static %}
+<a href="{% url 'home:produto_detail' produto.pk %}" class="product-card product-card--link {% if produto.destaque %}product-card--featured{% endif %}">
+  <div class="product-card-media">
+    {% if produto.imagem_exibir %}
+    <img src="{{ produto.imagem_exibir }}" alt="{{ produto.nome }}" loading="lazy">
+    {% else %}
+    <div class="product-placeholder">
+      <img src="{% static 'home/img/logo.jpg' %}" alt="">
+    </div>
+    {% endif %}
+    {% if produto.destaque %}<span class="badge">Destaque</span>{% endif %}
+  </div>
+  <div class="product-card-body">
+    <h3>{{ produto.nome }}</h3>
+    {% if produto.descricao %}
+    <p>{{ produto.descricao|truncatewords:18 }}</p>
+    {% endif %}
+    <div class="product-footer">
+      <span class="price">{{ produto.preco }} €</span>
+      <span class="link-arrow">Ver produto</span>
+    </div>
+  </div>
+</a>

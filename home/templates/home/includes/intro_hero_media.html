@@ -1,0 +1,51 @@
+{% load static %}
+<div class="intro-hero-logo">
+  {% if config_home.exibir_video_arquivo %}
+  <div class="intro-hero-video reveal">
+    <video
+      class="intro-hero-video-player"
+      controls
+      playsinline
+      preload="metadata"
+      {% if config_home.video_poster %}poster="{{ config_home.video_poster.url }}"{% endif %}
+    >
+      <source src="{{ config_home.video_arquivo.url }}" type="{{ config_home.video_content_type }}">
+      O seu browser não suporta vídeo HTML5.
+    </video>
+  </div>
+  {% elif config_home.instagram_usar_imagem_link %}
+  <div class="intro-hero-video reveal">
+    <a
+      href="{{ config_home.instagram_permalink }}"
+      class="intro-hero-instagram-link"
+      target="_blank"
+      rel="noopener"
+      aria-label="Ver publicação no Instagram"
+    >
+      <img
+        src="{{ config_home.instagram_imagem_exibir }}"
+        alt="Ver no Instagram — Mesa Brasileira"
+        class="intro-hero-instagram-img"
+        loading="lazy"
+      >
+      <span class="intro-hero-instagram-play" aria-hidden="true">
+        <span class="intro-hero-instagram-icon">▶</span>
+        <span>Instagram</span>
+      </span>
+    </a>
+  </div>
+  {% elif config_home.instagram_usar_embed %}
+  <div class="intro-hero-video reveal">
+    {% include "home/includes/instagram_embed.html" with permalink=config_home.instagram_permalink %}
+    <p class="intro-hero-video-hint">
+      <a href="{{ config_home.instagram_permalink }}" target="_blank" rel="noopener">Abrir no Instagram</a>
+    </p>
+  </div>
+  {% else %}
+  <img
+    src="{% if config_home.logo_personalizada_url %}{{ config_home.logo_personalizada_url }}{% else %}{% static 'home/img/logo.jpg' %}{% endif %}"
+    alt="Logo Mesa Brasileira"
+    class="logo-img logo-img--md"
+  >
+  {% endif %}
+</div>

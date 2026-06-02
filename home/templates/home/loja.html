@@ -1,0 +1,31 @@
+{% extends "home/base.html" %}
+
+{% block title %}Loja | Mesa Brasileira{% endblock %}
+{% block meta_description %}Merchandising e produtos oficiais do Projeto Mesa Brasileira.{% endblock %}
+{% block main_class %}page-main{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container page-hero-inner reveal">
+    <p class="eyebrow">Loja</p>
+    <h1>Vendas</h1>
+    <p class="page-hero-lead">
+      Camisolas, acessórios e produtos da marca. Clique para ver detalhes e comprar.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    {% if produtos %}
+    <div class="product-grid reveal-stagger">
+      {% for produto in produtos %}
+      <div>{% include "home/includes/product_card.html" with produto=produto %}</div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state reveal">Ainda não há produtos na loja.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

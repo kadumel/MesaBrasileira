@@ -1,0 +1,48 @@
+{% extends "home/base.html" %}
+{% load static %}
+
+{% block title %}{{ produto.nome }} | Loja | Mesa Brasileira{% endblock %}
+{% block main_class %}page-main{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--compact">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="Navegação">
+      <a href="{% url 'home:loja' %}">Loja</a>
+      <span aria-hidden="true">/</span>
+      <span>{{ produto.nome }}</span>
+    </nav>
+  </div>
+</section>
+
+<article class="section detail-section">
+  <div class="container detail-layout reveal">
+    <div class="detail-media detail-media--product">
+      {% if produto.imagem_exibir %}
+      <img src="{{ produto.imagem_exibir }}" alt="{{ produto.nome }}">
+      {% else %}
+      <div class="product-placeholder" style="aspect-ratio: 1; border-radius: var(--radius-lg);">
+        <img src="{% static 'home/img/logo.jpg' %}" alt="">
+      </div>
+      {% endif %}
+      {% if produto.destaque %}<span class="badge" style="position: absolute; top: 1rem; left: 1rem;">Destaque</span>{% endif %}
+    </div>
+    <div class="detail-content">
+      <h1>{{ produto.nome }}</h1>
+      <p class="detail-price">{{ produto.preco }} €</p>
+      {% if produto.descricao %}
+      <div class="detail-text">{{ produto.descricao|linebreaks }}</div>
+      {% endif %}
+      <div class="detail-actions">
+        {% if produto.link_compra %}
+        <a href="{{ produto.link_compra }}" class="btn btn-primary btn-lg" target="_blank" rel="noopener">Comprar agora</a>
+        {% else %}
+        <p class="muted">Contacte-nos pelo Instagram para encomendar.</p>
+        <a href="{{ instagram_url }}" class="btn btn-primary" target="_blank" rel="noopener">Instagram</a>
+        {% endif %}
+        <a href="{% url 'home:loja' %}" class="btn btn-outline">← Todos os produtos</a>
+      </div>
+    </div>
+  </div>
+</article>
+{% endblock %}

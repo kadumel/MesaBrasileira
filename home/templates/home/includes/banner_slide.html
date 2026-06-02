@@ -1,0 +1,27 @@
+{% if slide.tem_link %}
+<a href="{{ slide.url_destino }}" class="banner-slide banner-slide--link" {% if slide.tipo == 'propaganda' and slide.link %}target="_blank" rel="noopener"{% endif %}>
+{% else %}
+<div class="banner-slide">
+{% endif %}
+  {% if slide.imagem_exibir %}
+  <img src="{{ slide.imagem_exibir }}" alt="{{ slide.titulo }}" class="banner-slide-img">
+  {% else %}
+  <div class="banner-slide-placeholder"></div>
+  {% endif %}
+  <div class="banner-slide-overlay" aria-hidden="true"></div>
+  <div class="banner-slide-caption container">
+    {% if slide.tipo == 'evento' %}
+    <span class="banner-badge">Evento</span>
+    {% else %}
+    <span class="banner-badge banner-badge--ad">Destaque</span>
+    {% endif %}
+    <h2 class="banner-slide-title">{{ slide.titulo }}</h2>
+    {% if slide.subtitulo %}
+    <p class="banner-slide-sub">{{ slide.subtitulo }}</p>
+    {% endif %}
+  </div>
+{% if slide.tem_link %}
+</a>
+{% else %}
+</div>
+{% endif %}

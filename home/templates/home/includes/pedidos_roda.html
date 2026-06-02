@@ -1,0 +1,129 @@
+{% if pode_marcar %}
+<p class="equipe-fila-hint">
+  Sessão iniciada como <strong>{{ user.get_username }}</strong> — marque como tocada e use a observação para responder
+  a quem pediu (ex.: «já tocamos esta música antes»). A mensagem aparece na fila para todos verem.
+</p>
+{% endif %}
+
+<div class="requests-layout reveal">
+  <div class="requests-panel">
+    {% if evento_samba %}
+    <div class="active-event">
+      {% if evento_samba.imagem_exibir %}
+      <img src="{{ evento_samba.imagem_exibir }}" alt="" class="active-event-img" loading="lazy">
+      {% endif %}
+      <div>
+        <span class="badge badge-live">Evento ativo</span>
+        <h3>{{ evento_samba.titulo }}</h3>
+        <p>
+          <time datetime="{{ evento_samba.data|date:'c' }}">{{ evento_samba.data|date:"d/m/Y H:i" }}</time>
+          · {{ evento_samba.local }}
+        </p>
+      </div>
+    </div>
+
+    <form
+      id="form-pedido"
+      class="pedido-form"
+      method="post"
+      action="{% url 'home:pedido_musica' %}"
+      data-evento-id="{{ evento_samba.pk }}"
+      data-fila-url="{% url 'home:fila_pedidos' evento_samba.pk %}"
+    >
+      {% csrf_token %}
+      <input type="hidden" name="evento_id" value="{{ evento_samba.pk }}">
+      {{ form_pedido.musica }}
+      {{ form_pedido.artista }}
+      {{ form_pedido.pedido_por }}
+      {{ form_pedido.mensagem }}
+      <button type="submit" class="btn btn-primary btn-block">
+        Enviar pedido
+      </button>
+      <p class="form-hint" id="form-feedback" role="status"></p>
+    </form>
+    {% else %}
+    <div class="empty-event">
+      <p>Nenhum evento de samba ativo com pedidos abertos.</p>
+      <p class="muted">Volte mais tarde ou consulte a <a href="{% url 'home:eventos' %}">agenda de eventos</a>.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div
+    class="queue-panel"
+    id="queue-panel"
+    {% if evento_samba %}data-evento-id="{{ evento_samba.pk }}"{% endif %}
+    data-pode-marcar="{% if pode_marcar %}1{% else %}0{% endif %}"
+    data-marcar-url-sample="{% url 'home:marcar_pedido_tocado' 0 %}"
+  >
+    <div id="queue-csrf-source" class="visually-hidden" aria-hidden="true">{% csrf_token %}</div>
+    <div class="queue-header">
+      <h3>Fila da roda</h3>
+      <span class="queue-refresh" title="Atualiza automaticamente">● ao vivo</span>
+    </div>
+    <ul class="queue-list" id="queue-list">
+      {% for pedido in pedidos %}
+      <li
+        class="queue-item {% if pedido.tocado %}queue-item--done{% endif %}{% if pode_marcar and not pedido.tocado %} queue-item--equipe{% endif %}"
+        data-id="{{ pedido.pk }}"
+        data-tocado="{% if pedido.tocado %}1{% else %}0{% endif %}"
+      >
+        <div class="queue-item-body">
+          <div class="queue-item-top">
+            {% if pedido.tocado %}
+            <span class="badge badge-queue badge-queue--tocada">Já tocada</span>
+            {% else %}
+            <span class="badge badge-queue badge-queue--fila">Em fila</span>
+            {% endif %}
+          </div>
+          <div class="queue-item-main">
+            <strong>{{ pedido.musica }}</strong>
+            {% if pedido.artista %}<span>{{ pedido.artista }}</span>{% endif %}
+            <em>— {{ pedido.pedido_por }}</em>
+          </div>
+          {% if pedido.mensagem %}
+          <p class="queue-item-note queue-item-note--public">
+            <span class="queue-item-note-label">Pedido:</span> {{ pedido.mensagem }}
+          </p>
+          {% endif %}
+          {% if pedido.observacao_equipe %}
+          <p class="queue-item-note queue-item-note--resposta" role="status">
+            <span class="queue-item-note-label">Resposta da mesa:</span>
+            {{ pedido.observacao_equipe }}
+          </p>
+          {% endif %}
+        </div>
+        <div class="queue-item-action">
+          {% if pedido.tocado %}
+          <span class="queue-status ok" aria-label="Já tocada">✓</span>
+          {% elif pode_marcar %}
+          <form
+            method="post"
+            action="{% url 'home:marcar_pedido_tocado' pedido.pk %}"
+            class="marcar-tocado-form"
+          >
+            {% csrf_token %}
+            <label class="visually-hidden" for="obs-{{ pedido.pk }}">Observação (opcional)</label>
+            <input
+              type="text"
+              id="obs-{{ pedido.pk }}"
+              name="observacao_equipe"
+              class="form-input form-input--sm"
+              placeholder="Resposta visível na fila (opcional)"
+              maxlength="300"
+            >
+            <button type="submit" class="btn btn-xs btn-primary" title="Marcar como tocada">
+              Tocada
+            </button>
+          </form>
+          {% else %}
+          <span class="queue-status wait" aria-label="Na fila">♪</span>
+          {% endif %}
+        </div>
+      </li>
+      {% empty %}
+      <li class="queue-empty" id="queue-empty">A fila está vazia — seja o primeiro!</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>

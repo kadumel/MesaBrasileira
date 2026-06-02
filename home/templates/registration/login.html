@@ -1,0 +1,63 @@
+{% extends "home/base.html" %}
+{% load static %}
+
+{% block title %}Entrar | Mesa Brasileira{% endblock %}
+{% block main_class %}login-page{% endblock %}
+
+{% block content %}
+  <div class="login-page-inner">
+    <div class="container login-container">
+      <section class="requests-panel" aria-label="Login da equipa">
+        <div class="login-logo-wrap">
+          <img src="{% static 'home/img/logo.jpg' %}" alt="Mesa Brasileira" class="logo-img" width="88" height="88">
+        </div>
+        <header class="login-header">
+          <p class="eyebrow">Acesso da equipa</p>
+          <h2>Entrar</h2>
+          <p class="login-subtitle">
+            Use o seu login para marcar as músicas tocadas.
+          </p>
+        </header>
+
+        {% if form.non_field_errors %}
+          <div class="empty-state" style="padding: 0 0 1rem;">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="pedido-form">
+            <label for="{{ form.username.id_for_label }}" class="form-label">
+              {{ form.username.label }}
+            </label>
+            {{ form.username }}
+            {% if form.username.errors %}
+            <p class="form-hint error">{{ form.username.errors.0 }}</p>
+            {% endif %}
+
+            <label for="{{ form.password.id_for_label }}" class="form-label">
+              {{ form.password.label }}
+            </label>
+            {{ form.password }}
+            {% if form.password.errors %}
+            <p class="form-hint error">{{ form.password.errors.0 }}</p>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary btn-block" style="margin-top: .5rem;">
+              Entrar
+            </button>
+          </div>
+        </form>
+
+        <div style="margin-top: 1.25rem; text-align: center; color: var(--text-muted); font-size: .9rem;">
+          <a href="{% url 'home:index' %}" style="color: var(--text-muted); text-decoration: underline;">
+            Voltar ao site
+          </a>
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}
+

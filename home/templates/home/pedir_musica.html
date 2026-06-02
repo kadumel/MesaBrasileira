@@ -1,0 +1,30 @@
+{% extends "home/base.html" %}
+
+{% block title %}Pedir música | Mesa Brasileira{% endblock %}
+{% block meta_description %}Peça a sua música na roda do Projeto Mesa Brasileira e acompanhe a fila ao vivo.{% endblock %}
+{% block main_class %}page-main{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container page-hero-inner reveal">
+    <p class="eyebrow">Roda ao vivo</p>
+    <h1>Pedir música</h1>
+    <p class="page-hero-lead">
+      Peça a música que quer ouvir e acompanhe a fila ao vivo. Quando a mesa responder ao seu pedido,
+      a mensagem aparece em «Resposta da mesa» no seu lugar na fila.
+    </p>
+  </div>
+</section>
+
+<section class="section section-requests" id="pedidos">
+  <div class="container">
+    {% if not user.is_authenticated %}
+    <p class="equipe-fila-login reveal">
+      <a href="{% url 'home:login' %}?next={{ request.path|urlencode }}">Inicie sessão</a>
+      para marcar músicas como tocadas e registar observações.
+    </p>
+    {% endif %}
+    {% include "home/includes/pedidos_roda.html" %}
+  </div>
+</section>
+{% endblock %}

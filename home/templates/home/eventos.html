@@ -1,0 +1,67 @@
+{% extends "home/base.html" %}
+
+{% block title %}Eventos | Mesa Brasileira{% endblock %}
+{% block meta_description %}Agenda de eventos e rodas de samba do Projeto Mesa Brasileira.{% endblock %}
+{% block main_class %}page-main{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container page-hero-inner reveal">
+    <p class="eyebrow">Agenda</p>
+    <h1>Eventos</h1>
+    <p class="page-hero-lead">
+      Encontros em destaque e rodas de samba. Clique num evento para ver todos os detalhes.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <header class="section-header reveal">
+      <h2>Todos os eventos</h2>
+      <p>Agenda completa — com e sem destaque na página inicial.</p>
+    </header>
+
+    {% if eventos %}
+    <div class="events-grid reveal-stagger">
+      {% for evento in eventos %}
+      <div>{% include "home/includes/event_card.html" with evento=evento truncate_desc=False %}</div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state reveal">Ainda não há eventos cadastrados.</p>
+    {% endif %}
+  </div>
+</section>
+
+{% if eventos_samba %}
+<section class="section section-alt">
+  <div class="container">
+    <header class="section-header reveal">
+      <h2>Rodas de samba</h2>
+      <p>Eventos com pedidos de música ao vivo.</p>
+    </header>
+    <div class="events-grid reveal-stagger">
+      {% for evento in eventos_samba %}
+      <article class="event-card samba-card">
+        <div class="event-card-body" style="padding: 1.5rem;">
+          {% if evento.aceita_pedidos %}
+          <span class="badge badge-live">Aceita pedidos</span>
+          {% endif %}
+          <h3>{{ evento.titulo }}</h3>
+          <p class="event-local">
+            <time datetime="{{ evento.data|date:'c' }}">{{ evento.data|date:"d/m/Y H:i" }}</time>
+            · {{ evento.local }}
+          </p>
+          {% if evento.descricao %}<p>{{ evento.descricao|truncatewords:40 }}</p>{% endif %}
+          <a href="{% url 'home:pedir_musica' %}" class="btn btn-sm btn-primary" style="margin-top: 1rem;">
+            Pedir música
+          </a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

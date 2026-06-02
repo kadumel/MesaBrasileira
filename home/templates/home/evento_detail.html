@@ -1,0 +1,50 @@
+{% extends "home/base.html" %}
+{% load static %}
+
+{% block title %}{{ evento.titulo }} | Eventos | Mesa Brasileira{% endblock %}
+{% block main_class %}page-main{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--compact">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="Navegação">
+      <a href="{% url 'home:eventos' %}">Eventos</a>
+      <span aria-hidden="true">/</span>
+      <span>{{ evento.titulo }}</span>
+    </nav>
+  </div>
+</section>
+
+<article class="section detail-section">
+  <div class="container detail-layout reveal">
+    <div class="detail-media">
+      {% if evento.imagem_exibir %}
+      <img src="{{ evento.imagem_exibir }}" alt="{{ evento.titulo }}">
+      {% else %}
+      <div class="event-card-placeholder" style="aspect-ratio: 4/3; border-radius: var(--radius-lg);"></div>
+      {% endif %}
+    </div>
+    <div class="detail-content">
+      {% if evento.data_evento %}
+      <time class="detail-date" datetime="{{ evento.data_evento|date:'Y-m-d' }}">
+        {{ evento.data_evento|date:"d/m/Y" }}
+      </time>
+      {% endif %}
+      <h1>{{ evento.titulo }}</h1>
+      {% if evento.local %}
+      <p class="detail-meta"><strong>Local:</strong> {{ evento.local }}</p>
+      {% endif %}
+      {% if evento.descricao %}
+      <div class="detail-text">{{ evento.descricao|linebreaks }}</div>
+      {% endif %}
+      <div class="detail-actions">
+        {% if evento.link %}
+        <a href="{{ evento.link }}" class="btn btn-primary" target="_blank" rel="noopener">Mais informações</a>
+        {% endif %}
+        <a href="{% url 'home:eventos' %}" class="btn btn-outline">← Todos os eventos</a>
+        <a href="{% url 'home:pedir_musica' %}" class="btn btn-ghost">Pedir música na roda</a>
+      </div>
+    </div>
+  </div>
+</article>
+{% endblock %}

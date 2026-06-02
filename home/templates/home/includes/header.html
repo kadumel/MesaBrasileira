@@ -1,0 +1,47 @@
+{% load static %}
+<header class="site-header" id="topo">
+  <nav class="nav container">
+    <a href="{% url 'home:index' %}" class="logo">
+      <img src="{% static 'home/img/logo.jpg' %}" alt="Mesa Brasileira" class="logo-img" width="52" height="52">
+      <span>
+        <span class="logo-text">Mesa Brasileira</span>
+        <span class="logo-tagline">Em respeito ao nosso samba</span>
+      </span>
+    </a>
+    <button class="nav-toggle" aria-label="Abrir menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links">
+      <li>
+        <a href="{% url 'home:eventos' %}" class="{% if nav_active == 'eventos' %}nav-active{% endif %}">Eventos</a>
+      </li>
+      <li>
+        <a href="{% url 'home:loja' %}" class="{% if nav_active == 'loja' %}nav-active{% endif %}">Loja</a>
+      </li>
+      <li>
+        <a href="{% url 'home:pedir_musica' %}" class="{% if nav_active == 'pedidos' %}nav-active{% endif %}">Pedir música</a>
+      </li>
+      <li>
+        <a href="{% url 'home:index' %}#patrocinadores" class="{% if nav_active == 'patrocinadores' %}nav-active{% endif %}">Patrocinadores</a>
+      </li>
+      <li>
+        <a href="{% url 'home:index' %}#videos" class="{% if nav_active == 'videos' %}nav-active{% endif %}">Vídeos</a>
+      </li>
+      {% if user.is_authenticated %}
+      <li>
+        <form method="post" action="{% url 'home:logout' %}" class="nav-logout-form">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-ghost btn-sm">Sair</button>
+        </form>
+      </li>
+      {% else %}
+      <li>
+        <a href="{% url 'home:login' %}" class="btn btn-ghost btn-sm">Entrar</a>
+      </li>
+      {% endif %}
+      <li>
+        <a href="{{ instagram_url }}" class="btn btn-ghost btn-sm" target="_blank" rel="noopener">Instagram</a>
+      </li>
+    </ul>
+  </nav>
+</header>

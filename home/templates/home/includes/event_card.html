@@ -1,0 +1,25 @@
+<a href="{% url 'home:evento_detail' evento.pk %}" class="event-card event-card--link">
+  <div class="event-card-media">
+    {% if evento.imagem_exibir %}
+    <img src="{{ evento.imagem_exibir }}" alt="{{ evento.titulo }}" loading="lazy">
+    {% else %}
+    <div class="event-card-placeholder"></div>
+    {% endif %}
+    <div class="event-card-overlay"></div>
+  </div>
+  <div class="event-card-body">
+    {% if evento.data_evento %}
+    <time datetime="{{ evento.data_evento|date:'Y-m-d' }}">
+      {{ evento.data_evento|date:"d M Y" }}
+    </time>
+    {% endif %}
+    <h3>{{ evento.titulo }}</h3>
+    {% if evento.local %}<p class="event-local">{{ evento.local }}</p>{% endif %}
+    {% if truncate_desc and evento.descricao %}
+    <p>{{ evento.descricao|truncatewords:24 }}</p>
+    {% elif evento.descricao and not truncate_desc %}
+    <p>{{ evento.descricao|truncatewords:32 }}</p>
+    {% endif %}
+    <span class="link-arrow">Ver evento</span>
+  </div>
+</a>

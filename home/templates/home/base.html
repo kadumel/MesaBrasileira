@@ -1,0 +1,27 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{% block meta_description %}Projeto Mesa Brasileira — samba, roda e comunidade.{% endblock %}">
+  <title>{% block title %}Mesa Brasileira{% endblock %}</title>
+  <link rel="icon" href="{% static 'home/img/logo.jpg' %}" type="image/jpeg">
+  <meta name="theme-color" content="#e6d5b8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  {% block extra_css %}{% endblock %}
+  <link rel="stylesheet" href="{% static 'home/css/main.css' %}">
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  {% include "home/includes/header.html" %}
+  <main class="{% block main_class %}{% endblock %}">
+    {% block content %}{% endblock %}
+  </main>
+  {% include "home/includes/footer.html" %}
+  {% block extra_js %}{% endblock %}
+  <script src="{% static 'home/js/main.js' %}"></script>
+</body>
+</html>

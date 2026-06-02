@@ -1,0 +1,194 @@
+{% extends "home/base.html" %}
+{% load static %}
+
+{% block title %}Mesa Brasileira | Samba &amp; Comunidade{% endblock %}
+{% block meta_description %}Projeto Mesa Brasileira — samba, roda e comunidade. Eventos, loja e vídeos dos nossos encontros.{% endblock %}
+{% block main_class %}home-main{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+{% endblock %}
+
+{% block content %}
+{# Carrossel principal — logo abaixo do menu #}
+<section class="home-banner" id="banner" aria-label="Eventos e destaques">
+  {% if slides_home %}
+  <div class="swiper banner-swiper">
+    <div class="swiper-wrapper">
+      {% for slide in slides_home %}
+      <div class="swiper-slide">
+        {% include "home/includes/banner_slide.html" with slide=slide %}
+      </div>
+      {% endfor %}
+    </div>
+    <div class="swiper-pagination banner-pagination"></div>
+    <button type="button" class="swiper-button-prev banner-prev" aria-label="Slide anterior"></button>
+    <button type="button" class="swiper-button-next banner-next" aria-label="Próximo slide"></button>
+  </div>
+  {% else %}
+  <div class="banner-fallback">
+    <img src="{% static 'home/img/logo.jpg' %}" alt="Mesa Brasileira" class="banner-fallback-logo">
+    <p>Cadastre slides no admin em «Slides do carrossel».</p>
+  </div>
+  {% endif %}
+</section>
+
+<section class="intro-hero">
+  <div class="container intro-hero-inner reveal">
+    <div class="intro-hero-text">
+      <p class="eyebrow">Em respeito ao nosso samba</p>
+      <h1>Mesa <span>Brasileira</span></h1>
+      <p class="hero-lead">
+        Projeto de samba com roda, perto e calor humano. Acompanhe os nossos eventos,
+        peça a sua música e leve a energia da mesa para casa.
+      </p>
+      <div class="hero-actions">
+        <a href="{% url 'home:eventos' %}" class="btn btn-primary">Agenda completa</a>
+        <a href="{% url 'home:pedir_musica' %}" class="btn btn-outline">Pedir música</a>
+        <a href="{% url 'home:loja' %}" class="btn btn-outline">Loja</a>
+      </div>
+    </div>
+    {% include "home/includes/intro_hero_media.html" %}
+  </div>
+</section>
+
+<section class="section section-events-preview" id="eventos">
+  <div class="container">
+    <header class="section-header section-header--row reveal">
+      <div>
+        <p class="eyebrow">Agenda</p>
+        <h2>Próximos eventos</h2>
+        <p>Confira a nossa programação.</p>
+      </div>
+      <a href="{% url 'home:eventos' %}" class="btn btn-outline btn-sm">Ver todos</a>
+    </header>
+
+    {% if eventos_destaque %}
+    <div class="events-grid reveal-stagger">
+      {% for evento in eventos_destaque %}
+      <div>{% include "home/includes/event_card.html" with evento=evento truncate_desc=True %}</div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state reveal">Ainda não há eventos. <a href="{% url 'home:eventos' %}">Ver agenda</a>.</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section section-shop" id="loja">
+  <div class="container">
+    <header class="section-header section-header--row reveal">
+      <div>
+        <p class="eyebrow">Loja</p>
+        <h2>Produtos da marca</h2>
+        <p>Merchandising oficial do Projeto Mesa Brasileira.</p>
+      </div>
+      <a href="{% url 'home:loja' %}" class="btn btn-outline btn-sm">Ver loja</a>
+    </header>
+
+    {% if produtos %}
+    <div class="product-grid reveal-stagger">
+      {% for produto in produtos %}
+      <div>{% include "home/includes/product_card.html" with produto=produto %}</div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state reveal">Cadastre produtos no admin ou <a href="{% url 'home:loja' %}">visite a loja</a>.</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section section-videos" id="videos">
+  <div class="container">
+    <header class="section-header reveal">
+      <p class="eyebrow">Memórias</p>
+      <h2>Vídeos dos eventos</h2>
+      <p>Momentos da roda publicados no Instagram — assista aos nossos encontros.</p>
+    </header>
+
+    {% if videos %}
+    <div class="video-grid reveal-stagger">
+      {% for video in videos %}
+      <a
+        href="{{ video.instagram_url }}"
+        class="video-card"
+        target="_blank"
+        rel="noopener"
+        data-tilt
+      >
+        <div class="video-card-media">
+          {% if video.capa_exibir %}
+          <img src="{{ video.capa_exibir }}" alt="{{ video.titulo }}" loading="lazy">
+          {% else %}
+          <div class="video-placeholder">
+            <span class="play-icon" aria-hidden="true">▶</span>
+          </div>
+          {% endif %}
+          <div class="video-card-play" aria-hidden="true">
+            <span>▶</span>
+          </div>
+        </div>
+        <div class="video-card-body">
+          <h3>{{ video.titulo }}</h3>
+          {% if video.evento %}
+          <p>{{ video.evento.titulo }}</p>
+          {% endif %}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state reveal">
+      Adicione links de reels/posts do
+      <a href="{{ instagram_url }}" target="_blank" rel="noopener">Instagram</a>
+      no admin.
+    </p>
+    {% endif %}
+
+    <div class="instagram-cta reveal">
+      <a href="{{ instagram_url }}" class="btn btn-outline btn-lg" target="_blank" rel="noopener">
+        Seguir @mesabrasileirapt no Instagram
+      </a>
+    </div>
+  </div>
+</section>
+
+{% if patrocinadores %}
+<section class="section section-patrocinadores" id="patrocinadores">
+  <div class="container">
+    <header class="section-header reveal" style="text-align: center; margin-inline: auto;">
+      <p class="eyebrow">Parceiros</p>
+      <h2>Patrocinadores</h2>
+      <p>Quem apoia a nossa roda e leva o samba mais longe.</p>
+    </header>
+    <ul class="patrocinadores-grid reveal-stagger">
+      {% for pat in patrocinadores %}
+      <li>
+        {% if pat.site %}
+        <a href="{{ pat.site }}" class="patrocinador-card" target="_blank" rel="noopener" title="{{ pat.nome }}">
+        {% else %}
+        <div class="patrocinador-card">
+        {% endif %}
+          {% if pat.logo_exibir %}
+          <img src="{{ pat.logo_exibir }}" alt="" loading="lazy" width="200" height="120">
+          {% endif %}
+          <span class="patrocinador-nome">{{ pat.nome }}</span>
+        {% if pat.site %}
+        </a>
+        {% else %}
+        </div>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+{% if config_home.instagram_usar_embed %}
+<script async src="https://www.instagram.com/embed.js"></script>
+{% endif %}
+{% endblock %}
