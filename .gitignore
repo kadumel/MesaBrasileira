@@ -13,7 +13,8 @@ venv/
 .venv/
 env/
 ENV/
-
+.env
+env.example
 # Django
 db.sqlite3
 db.sqlite3-journal

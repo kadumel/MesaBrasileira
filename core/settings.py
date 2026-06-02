@@ -168,7 +168,9 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
+# Servir uploads do volume via Django (Railway). Desative se usar S3/CDN.
+SERVE_MEDIA = os.environ.get("SERVE_MEDIA", "true").lower() in ("true", "1", "yes")
 # Railway: MEDIA_ROOT=/data/media no volume. Em local, .env com /data/media cai para media/ do projeto.
 MEDIA_ROOT = _resolve_media_root()
 
