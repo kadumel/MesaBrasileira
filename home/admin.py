@@ -275,7 +275,7 @@ class ProdutoAdmin(admin.ModelAdmin):
 class PedidoMusicaInline(admin.TabularInline):
     model = PedidoMusica
     extra = 0
-    readonly_fields = ("criado_em", "tocado_em")
+    readonly_fields = ("criado_em", "tocado_em", "marcado_por")
     fields = (
         "musica",
         "artista",
@@ -283,6 +283,7 @@ class PedidoMusicaInline(admin.TabularInline):
         "mensagem",
         "observacao_equipe",
         "tocado",
+        "marcado_por",
         "criado_em",
     )
 
@@ -317,6 +318,7 @@ class PedidoMusicaAdmin(admin.ModelAdmin):
         "pedido_por",
         "evento",
         "tocado",
+        "marcado_por",
         "observacao_equipe",
         "criado_em",
     )
@@ -327,7 +329,7 @@ class PedidoMusicaAdmin(admin.ModelAdmin):
     @admin.action(description="Marcar selecionados como já tocados")
     def marcar_como_tocados(self, request, queryset):
         for pedido in queryset.filter(tocado=False):
-            pedido.marcar_tocado()
+            pedido.marcar_tocado(user=request.user)
 
 
 @admin.register(VideoEvento)

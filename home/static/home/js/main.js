@@ -138,6 +138,9 @@
     if (p.observacao_equipe) {
       html += `<p class="queue-item-note queue-item-note--resposta" role="status"><span class="queue-item-note-label">Resposta da mesa:</span> ${escapeHtml(p.observacao_equipe)}</p>`;
     }
+    if (isTocado(p) && p.marcado_por_exibir) {
+      html += `<p class="queue-item-note queue-item-note--marcador"><span class="queue-item-note-label">Marcado por:</span> ${escapeHtml(p.marcado_por_exibir)}</p>`;
+    }
     return html;
   }
 

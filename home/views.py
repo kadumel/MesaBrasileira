@@ -54,7 +54,10 @@ def _evento_pedidos_context():
     pedidos = []
     form = None
     if evento_samba:
-        pedidos = evento_samba.pedidos.all().order_by("tocado", "id")[:50]
+        pedidos = (
+            evento_samba.pedidos.select_related("marcado_por")
+            .order_by("tocado", "id")[:50]
+        )
         form = PedidoMusicaForm()
     return {
         "evento_samba": evento_samba,
@@ -188,7 +191,10 @@ def marcar_pedido_tocado(request, pk):
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse({"ok": False, "errors": form.errors}, status=400)
         return HttpResponseRedirect(reverse("home:pedir_musica"))
-    pedido.marcar_tocado(form.cleaned_data.get("observacao_equipe", ""))
+    pedido.marcar_tocado(
+        form.cleaned_data.get("observacao_equipe", ""),
+        user=request.user,
+    )
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return JsonResponse(
             {
@@ -200,6 +206,7 @@ def marcar_pedido_tocado(request, pk):
                     "pedido_por": pedido.pedido_por,
                     "mensagem": pedido.mensagem,
                     "observacao_equipe": pedido.observacao_equipe,
+                    "marcado_por_exibir": pedido.marcado_por_exibir,
                     "tocado": True,
                 },
             }
@@ -213,7 +220,9 @@ def fila_pedidos_json(request, evento_id):
     config = ConfiguracaoHome.get_solo()
     limite = config.limite_pedidos_em_fila
     total_em_fila = _contagem_em_fila(evento)
-    pedidos = evento.pedidos.all().order_by("tocado", "id")[:50]
+    pedidos = (
+        evento.pedidos.select_related("marcado_por").order_by("tocado", "id")[:50]
+    )
     data = [
         {
             "id": p.pk,
@@ -222,6 +231,7 @@ def fila_pedidos_json(request, evento_id):
             "pedido_por": p.pedido_por,
             "mensagem": p.mensagem,
             "observacao_equipe": p.observacao_equipe,
+            "marcado_por_exibir": p.marcado_por_exibir,
             "tocado": p.tocado,
             "criado_em": p.criado_em.isoformat(),
         }

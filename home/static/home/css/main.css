@@ -918,6 +918,15 @@ a:hover {
   color: var(--green);
 }
 
+.queue-item-note--marcador {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.queue-item-note--marcador .queue-item-note-label {
+  color: var(--brown-muted);
+}
+
 .queue-item-action {
   flex-shrink: 0;
   display: flex;

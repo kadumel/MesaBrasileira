@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.urls import reverse
@@ -268,6 +269,14 @@ class PedidoMusica(models.Model):
     )
     tocado = models.BooleanField(default=False, verbose_name="Já tocámos")
     tocado_em = models.DateTimeField(null=True, blank=True)
+    marcado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pedidos_musica_marcados",
+        verbose_name="Marcado por (membro)",
+    )
     criado_em = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -278,10 +287,20 @@ class PedidoMusica(models.Model):
     def __str__(self):
         return f"{self.musica} — {self.pedido_por}"
 
-    def marcar_tocado(self, observacao_equipe=None):
+    @property
+    def marcado_por_exibir(self):
+        if not self.marcado_por_id:
+            return ""
+        user = self.marcado_por
+        nome = (user.get_full_name() or "").strip()
+        return nome or user.get_username()
+
+    def marcar_tocado(self, observacao_equipe=None, user=None):
         self.tocado = True
         self.tocado_em = timezone.now()
-        update_fields = ["tocado", "tocado_em"]
+        update_fields = ["tocado", "tocado_em", "marcado_por"]
+        if user is not None and getattr(user, "is_authenticated", False):
+            self.marcado_por = user
         if observacao_equipe is not None:
             self.observacao_equipe = (observacao_equipe or "").strip()[:300]
             update_fields.append("observacao_equipe")

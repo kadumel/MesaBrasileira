@@ -120,6 +120,12 @@
             {{ pedido.observacao_equipe }}
           </p>
           {% endif %}
+          {% if pedido.tocado and pedido.marcado_por_exibir %}
+          <p class="queue-item-note queue-item-note--marcador">
+            <span class="queue-item-note-label">Marcado por:</span>
+            {{ pedido.marcado_por_exibir }}
+          </p>
+          {% endif %}
         </div>
         <div class="queue-item-action">
           {% if pedido.tocado %}
