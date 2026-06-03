@@ -187,6 +187,45 @@ LOGOUT_REDIRECT_URL = '/'
 # Create this group in /admin/ and add the team users.
 MESA_BRASILEIRA_EQUIPE_GROUP_NAME = 'Equipe'
 
+# Loja / checkout
+def _env_strip(key: str, default: str = "") -> str:
+    return os.environ.get(key, default).strip()
+
+
+SITE_URL = _env_strip("SITE_URL", "http://127.0.0.1:8000").rstrip("/")
+LOJA_TOKEN_EMAIL_HORAS = int(_env_strip("LOJA_TOKEN_EMAIL_HORAS", "48"))
+LOJA_MBWAY_TELEFONE = _env_strip("LOJA_MBWAY_TELEFONE")
+LOJA_IBAN = _env_strip("LOJA_IBAN")
+
+_email_host_user = _env_strip("EMAIL_HOST_USER")
+_email_backend = _env_strip("EMAIL_BACKEND")
+if _email_backend:
+    EMAIL_BACKEND = _email_backend
+elif _email_host_user:
+    # SMTP ativo quando há credenciais, mesmo sem EMAIL_BACKEND no .env
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+EMAIL_HOST = _env_strip("EMAIL_HOST", "smtp.gmail.com")
+try:
+    EMAIL_PORT = int(_env_strip("EMAIL_PORT", "587"))
+except ValueError:
+    EMAIL_PORT = 587
+EMAIL_USE_TLS = _env_strip("EMAIL_USE_TLS", "true").lower() in ("true", "1", "yes")
+EMAIL_USE_SSL = _env_strip("EMAIL_USE_SSL", "false").lower() in ("true", "1", "yes")
+EMAIL_HOST_USER = _email_host_user
+EMAIL_HOST_PASSWORD = _env_strip("EMAIL_HOST_PASSWORD")
+EMAIL_TIMEOUT = int(_env_strip("EMAIL_TIMEOUT", "30"))
+
+_from_custom = _env_strip("DEFAULT_FROM_EMAIL")
+if _from_custom:
+    DEFAULT_FROM_EMAIL = _from_custom
+elif _email_host_user:
+    DEFAULT_FROM_EMAIL = f"Mesa Brasileira <{_email_host_user}>"
+else:
+    DEFAULT_FROM_EMAIL = "Mesa Brasileira <noreply@mesabrasileira.pt>"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 

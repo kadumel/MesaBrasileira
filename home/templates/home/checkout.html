@@ -1,0 +1,47 @@
+{% extends "home/base.html" %}
+
+{% block title %}Checkout | Loja | Mesa Brasileira{% endblock %}
+{% block main_class %}page-main{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--compact">
+  <div class="container page-hero-inner reveal">
+    <p class="eyebrow">Loja</p>
+    <h1>Checkout</h1>
+    <p class="page-hero-lead">Dados de entrega e contacto. Enviaremos um email para confirmar o endereço antes do pagamento.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container checkout-layout reveal">
+    <div class="checkout-order-preview">
+      <h2 class="checkout-subtitle">Resumo</h2>
+      <ul class="checkout-lines">
+        {% for linha in linhas %}
+        <li>
+          <span>{{ linha.produto.nome }}{% if linha.tamanho %} ({{ linha.tamanho }}){% endif %} × {{ linha.quantidade }}</span>
+          <span>{{ linha.subtotal }} €</span>
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="checkout-summary-total"><span>Total</span> <strong>{{ subtotal }} €</strong></p>
+    </div>
+
+    <form method="post" class="checkout-form" novalidate>
+      {% csrf_token %}
+      <h2 class="checkout-subtitle">Dados para entrega</h2>
+      {% for field in form %}
+      <div class="form-group">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+        <p class="form-hint error">{{ field.errors.0 }}</p>
+        {% endif %}
+      </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary btn-lg btn-block">Continuar — confirmar email</button>
+      <a href="{% url 'home:carrinho' %}" class="btn btn-outline btn-block">← Voltar ao carrinho</a>
+    </form>
+  </div>
+</section>
+{% endblock %}

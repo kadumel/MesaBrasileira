@@ -18,6 +18,13 @@
   <div class="grain" aria-hidden="true"></div>
   {% include "home/includes/header.html" %}
   <main class="{% block main_class %}{% endblock %}">
+    {% if messages %}
+    <div class="container site-messages" role="status">
+      {% for message in messages %}
+      <p class="site-message {{ message.tags }}">{{ message }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
     {% block content %}{% endblock %}
   </main>
   {% include "home/includes/footer.html" %}

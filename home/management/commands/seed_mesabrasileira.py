@@ -11,6 +11,7 @@ from home.models import (
     Patrocinador,
     Produto,
     SlideHome,
+    TamanhoProduto,
     VideoEvento,
 )
 
@@ -111,7 +112,7 @@ class Command(BaseCommand):
                 descricao="Algodão premium com estampa exclusiva do projeto.",
                 preco=Decimal("22.00"),
                 imagem_url=IMG_SHIRT,
-                link_compra=INSTAGRAM,
+                requer_tamanho=True,
                 destaque=True,
                 ordem=1,
             ),
@@ -133,6 +134,14 @@ class Command(BaseCommand):
             ),
         ]
         Produto.objects.bulk_create(produtos)
+        camisola = Produto.objects.filter(nome="T-shirt Mesa Brasileira").first()
+        if camisola:
+            TamanhoProduto.objects.bulk_create(
+                [
+                    TamanhoProduto(produto=camisola, codigo=codigo)
+                    for codigo, _ in TamanhoProduto.TAMANHOS
+                ]
+            )
 
         evento_samba = EventoSamba.objects.create(
             titulo="Roda Mesa Brasileira — Ao vivo",

@@ -1,3 +1,8 @@
+import secrets
+import uuid
+from datetime import timedelta
+from decimal import Decimal
+
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -183,7 +188,15 @@ class Produto(models.Model):
     link_compra = models.URLField(
         max_length=URL_MAX_LENGTH,
         blank=True,
-        help_text="Link para compra ou contacto.",
+        help_text="Link externo opcional (a loja usa carrinho e checkout no site).",
+    )
+    requer_tamanho = models.BooleanField(
+        default=False,
+        verbose_name="Exige escolha de tamanho",
+        help_text=(
+            "Marque para artigos como camisolas. O cliente deve escolher um tamanho "
+            "ao adicionar ao carrinho (configure os tamanhos disponíveis abaixo)."
+        ),
     )
     destaque = models.BooleanField(default=False)
     ativo = models.BooleanField(default=True)
@@ -202,6 +215,210 @@ class Produto(models.Model):
         if self.imagem:
             return self.imagem.url
         return self.imagem_url or ""
+
+    def tamanhos_ativos(self):
+        return self.tamanhos.filter(ativo=True).order_by("ordem", "codigo")
+
+    def tamanho_valido(self, codigo: str) -> bool:
+        if not self.requer_tamanho:
+            return not codigo
+        codigo = (codigo or "").strip().upper()
+        if not codigo:
+            return False
+        ativos = self.tamanhos_ativos()
+        if ativos.exists():
+            return ativos.filter(codigo=codigo).exists()
+        return codigo in dict(TamanhoProduto.TAMANHOS)
+
+
+class TamanhoProduto(models.Model):
+    TAMANHO_S = "S"
+    TAMANHO_M = "M"
+    TAMANHO_L = "L"
+    TAMANHO_XL = "XL"
+    TAMANHO_XXL = "XXL"
+    TAMANHOS = [
+        (TAMANHO_S, "S"),
+        (TAMANHO_M, "M"),
+        (TAMANHO_L, "L"),
+        (TAMANHO_XL, "XL"),
+        (TAMANHO_XXL, "XXL"),
+    ]
+    ORDEM_TAMANHO = {
+        TAMANHO_S: 1,
+        TAMANHO_M: 2,
+        TAMANHO_L: 3,
+        TAMANHO_XL: 4,
+        TAMANHO_XXL: 5,
+    }
+
+    produto = models.ForeignKey(
+        Produto,
+        on_delete=models.CASCADE,
+        related_name="tamanhos",
+    )
+    codigo = models.CharField(max_length=5, choices=TAMANHOS)
+    ativo = models.BooleanField(default=True)
+    ordem = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["ordem", "codigo"]
+        verbose_name = "Tamanho do produto"
+        verbose_name_plural = "Tamanhos do produto"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["produto", "codigo"],
+                name="uniq_produto_tamanho",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.produto.nome} — {self.codigo}"
+
+    def save(self, *args, **kwargs):
+        if not self.ordem:
+            self.ordem = self.ORDEM_TAMANHO.get(self.codigo, 0)
+        super().save(*args, **kwargs)
+
+
+class Pedido(models.Model):
+    STATUS_AGUARDA_EMAIL = "aguarda_email"
+    STATUS_AGUARDA_PAGAMENTO = "aguarda_pagamento"
+    STATUS_PAGO = "pago"
+    STATUS_CANCELADO = "cancelado"
+    STATUS_EXPIRADO = "expirado"
+    STATUS = [
+        (STATUS_AGUARDA_EMAIL, "Aguarda confirmação de email"),
+        (STATUS_AGUARDA_PAGAMENTO, "Aguarda pagamento"),
+        (STATUS_PAGO, "Pago"),
+        (STATUS_CANCELADO, "Cancelado"),
+        (STATUS_EXPIRADO, "Expirado"),
+    ]
+
+    METODO_MBWAY = "mbway"
+    METODO_TRANSFERENCIA = "transferencia"
+    METODOS_PAGAMENTO = [
+        (METODO_MBWAY, "MB Way"),
+        (METODO_TRANSFERENCIA, "Transferência bancária"),
+    ]
+
+    numero = models.CharField(max_length=32, unique=True, editable=False)
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS,
+        default=STATUS_AGUARDA_EMAIL,
+    )
+    nome = models.CharField(max_length=120)
+    email = models.EmailField()
+    telefone = models.CharField(max_length=30)
+    morada = models.CharField(max_length=300)
+    codigo_postal = models.CharField(max_length=20)
+    cidade = models.CharField(max_length=120)
+    pais = models.CharField(max_length=80, default="Portugal")
+    notas_entrega = models.CharField(max_length=500, blank=True)
+    email_confirmado = models.BooleanField(default=False)
+    token_confirmacao = models.UUIDField(default=uuid.uuid4, editable=False)
+    token_expira_em = models.DateTimeField()
+    metodo_pagamento = models.CharField(
+        max_length=20,
+        choices=METODOS_PAGAMENTO,
+        blank=True,
+    )
+    referencia_pagamento = models.CharField(
+        max_length=120,
+        blank=True,
+        help_text="Telefone MB Way ou referência indicada pelo cliente.",
+    )
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0"))
+    total = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0"))
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+    email_confirmado_em = models.DateTimeField(null=True, blank=True)
+    pago_em = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-criado_em"]
+        verbose_name = "Pedido da loja"
+        verbose_name_plural = "Pedidos da loja"
+
+    def __str__(self):
+        return f"{self.numero} — {self.nome}"
+
+    @classmethod
+    def gerar_numero(cls) -> str:
+        prefixo = timezone.now().strftime("%Y%m%d")
+        for _ in range(20):
+            sufixo = secrets.token_hex(3).upper()
+            numero = f"MB-{prefixo}-{sufixo}"
+            if not cls.objects.filter(numero=numero).exists():
+                return numero
+        return f"MB-{prefixo}-{uuid.uuid4().hex[:6].upper()}"
+
+    def definir_expiracao_token(self, horas: int | None = None):
+        horas = horas or getattr(settings, "LOJA_TOKEN_EMAIL_HORAS", 48)
+        self.token_expira_em = timezone.now() + timedelta(hours=horas)
+
+    def token_valido(self) -> bool:
+        return timezone.now() < self.token_expira_em
+
+    def confirmar_email(self):
+        self.email_confirmado = True
+        self.email_confirmado_em = timezone.now()
+        self.status = self.STATUS_AGUARDA_PAGAMENTO
+        self.save(
+            update_fields=[
+                "email_confirmado",
+                "email_confirmado_em",
+                "status",
+                "atualizado_em",
+            ]
+        )
+
+    def url_confirmacao_email(self) -> str:
+        base = getattr(settings, "SITE_URL", "").rstrip("/")
+        path = reverse(
+            "home:confirmar_email_pedido",
+            kwargs={"token": str(self.token_confirmacao)},
+        )
+        return f"{base}{path}"
+
+    @property
+    def pode_pagar(self) -> bool:
+        return (
+            self.email_confirmado
+            and self.status == self.STATUS_AGUARDA_PAGAMENTO
+        )
+
+
+class ItemPedido(models.Model):
+    pedido = models.ForeignKey(
+        Pedido,
+        on_delete=models.CASCADE,
+        related_name="itens",
+    )
+    produto = models.ForeignKey(
+        Produto,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="itens_pedido",
+    )
+    nome_produto = models.CharField(max_length=200)
+    tamanho = models.CharField(max_length=5, blank=True)
+    quantidade = models.PositiveIntegerField(default=1)
+    preco_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        verbose_name = "Item do pedido"
+        verbose_name_plural = "Itens do pedido"
+
+    def __str__(self):
+        tam = f" ({self.tamanho})" if self.tamanho else ""
+        return f"{self.nome_produto}{tam} × {self.quantidade}"
+
+    @property
+    def subtotal(self):
+        return self.preco_unitario * self.quantidade
 
 
 class EventoSamba(models.Model):
@@ -327,6 +544,10 @@ class VideoEvento(models.Model):
         help_text="Preenchida automaticamente ao guardar o link do Instagram (pré-visualização).",
     )
     ordem = models.PositiveIntegerField(default=0)
+    destaque = models.BooleanField(
+        default=False,
+        help_text="Se marcado, o vídeo pode aparecer na página inicial (secção de vídeos).",
+    )
     ativo = models.BooleanField(default=True)
     criado_em = models.DateTimeField(auto_now_add=True)
 
@@ -455,10 +676,22 @@ class ConfiguracaoHome(models.Model):
             "Deixe vazio para usar o texto predefinido."
         ),
     )
+    videos_descricao = models.TextField(
+        blank=True,
+        verbose_name="Descrição da página «Vídeos»",
+        help_text=(
+            "Texto exibido abaixo do título em /videos/ (classe page-hero-lead). "
+            "Deixe vazio para usar o texto predefinido."
+        ),
+    )
 
     TEXTO_PADRAO_PEDIR_MUSICA = (
         "Peça a música que quer ouvir e acompanhe a fila ao vivo. Quando a mesa responder "
         "ao seu pedido, a mensagem aparece em «Resposta da mesa» no seu lugar na fila."
+    )
+    TEXTO_PADRAO_VIDEOS = (
+        "Escolha um evento para ver os vídeos publicados no Instagram. Os marcados como destaque "
+        "também aparecem na página inicial."
     )
 
     class Meta:
@@ -516,6 +749,11 @@ class ConfiguracaoHome(models.Model):
     def pedir_musica_lead_exibir(self):
         texto = (self.pedir_musica_descricao or "").strip()
         return texto or self.TEXTO_PADRAO_PEDIR_MUSICA
+
+    @property
+    def videos_lead_exibir(self):
+        texto = (self.videos_descricao or "").strip()
+        return texto or self.TEXTO_PADRAO_VIDEOS
 
     @property
     def instagram_permalink(self):

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Confirmar pedido {{ pedido.numero }}</title>
+</head>
+<body style="font-family: sans-serif; line-height: 1.6; color: #333;">
+  <p>Olá <strong>{{ pedido.nome }}</strong>,</p>
+  <p>Obrigado pela sua encomenda na <strong>{{ site_nome }}</strong>.</p>
+  <p>
+    <strong>Pedido:</strong> {{ pedido.numero }}<br>
+    <strong>Total:</strong> {{ pedido.total }} €
+  </p>
+  <p>Para validar o seu email e continuar com o pagamento, clique no botão:</p>
+  <p>
+    <a href="{{ url_confirmacao }}" style="display:inline-block;padding:12px 24px;background:#2d5a3d;color:#fff;text-decoration:none;border-radius:6px;">
+      Confirmar email e pagar
+    </a>
+  </p>
+  <p style="font-size:0.9em;color:#666;">Ou copie este link: {{ url_confirmacao }}</p>
+  <p style="font-size:0.85em;color:#888;">Se não fez este pedido, ignore este email.</p>
+</body>
+</html>

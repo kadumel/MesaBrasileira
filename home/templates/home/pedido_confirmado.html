@@ -1,0 +1,46 @@
+{% extends "home/base.html" %}
+
+{% block title %}Pedido {{ pedido.numero }} | Mesa Brasileira{% endblock %}
+{% block main_class %}page-main{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container checkout-status reveal">
+    <p class="eyebrow">Obrigado</p>
+    <h1>Pedido registado</h1>
+    <p class="page-hero-lead">
+      O seu pedido <strong>{{ pedido.numero }}</strong> foi recebido.
+      {% if pedido.metodo_pagamento == "mbway" %}
+      Envie o pagamento MB Way e aguarde a nossa confirmação por email.
+      {% else %}
+      Efetue a transferência com a referência do pedido e aguarde a nossa confirmação.
+      {% endif %}
+    </p>
+
+    <div class="checkout-order-preview" style="margin: 2rem 0;">
+      <h2 class="checkout-subtitle">Resumo</h2>
+      <ul class="checkout-lines">
+        {% for item in pedido.itens.all %}
+        <li>
+          <span>{{ item.nome_produto }}{% if item.tamanho %} ({{ item.tamanho }}){% endif %} × {{ item.quantidade }}</span>
+          <span>{{ item.subtotal }} €</span>
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="checkout-summary-total"><span>Total</span> <strong>{{ pedido.total }} €</strong></p>
+    </div>
+
+    <p><strong>Entrega:</strong> {{ pedido.nome }}, {{ pedido.morada }}, {{ pedido.codigo_postal }} {{ pedido.cidade }}, {{ pedido.pais }}</p>
+    <p><strong>Contacto:</strong> {{ pedido.email }} · {{ pedido.telefone }}</p>
+
+    {% if mbway_telefone and pedido.metodo_pagamento == "mbway" %}
+    <p class="muted">MB Way: {{ mbway_telefone }}</p>
+    {% endif %}
+    {% if iban and pedido.metodo_pagamento == "transferencia" %}
+    <p class="muted">IBAN: {{ iban }}</p>
+    {% endif %}
+
+    <a href="{% url 'home:loja' %}" class="btn btn-primary" style="margin-top: 2rem;">Voltar à loja</a>
+  </div>
+</section>
+{% endblock %}

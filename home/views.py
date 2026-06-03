@@ -1,13 +1,15 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.db.models import Count, Q
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST
 
 from .constants import INSTAGRAM_URL
-from .forms import MarcarPedidoTocadoForm, PedidoMusicaForm
+from .cart import cart_count
+from .forms import AdicionarCarrinhoForm, MarcarPedidoTocadoForm, PedidoMusicaForm
 from .models import (
     ConfiguracaoHome,
     EventoDestaque,
@@ -76,7 +78,9 @@ def index(request):
         "eventos_destaque": EventoDestaque.objects.filter(ativo=True, destaque=True)[:6],
         "produtos": produtos_qs[:6],
         "total_produtos": produtos_qs.count(),
-        "videos": VideoEvento.objects.filter(ativo=True).select_related("evento"),
+        "videos": VideoEvento.objects.filter(ativo=True, destaque=True).select_related(
+            "evento"
+        ),
         "nav_active": "home",
     }
     return render(request, "home/index.html", context)
@@ -109,19 +113,73 @@ def evento_detail(request, pk):
     return render(request, "home/evento_detail.html", context)
 
 
+def _eventos_com_videos_queryset():
+    return (
+        EventoSamba.objects.filter(videos__ativo=True)
+        .annotate(
+            qtd_videos=Count("videos", filter=Q(videos__ativo=True), distinct=True)
+        )
+        .filter(qtd_videos__gt=0)
+        .distinct()
+        .order_by("-data")
+    )
+
+
+def videos(request, evento_pk=None):
+    eventos_com_videos = list(_eventos_com_videos_queryset())
+    evento_selecionado = None
+    videos_lista = VideoEvento.objects.none()
+    videos_sem_evento = VideoEvento.objects.filter(
+        evento__isnull=True, ativo=True
+    ).order_by("ordem", "-criado_em")
+
+    if evento_pk is not None:
+        evento_selecionado = get_object_or_404(EventoSamba, pk=evento_pk)
+        videos_lista = (
+            VideoEvento.objects.filter(evento=evento_selecionado, ativo=True)
+            .select_related("evento")
+            .order_by("ordem", "-criado_em")
+        )
+    elif eventos_com_videos:
+        evento_selecionado = eventos_com_videos[0]
+        videos_lista = (
+            VideoEvento.objects.filter(evento=evento_selecionado, ativo=True)
+            .select_related("evento")
+            .order_by("ordem", "-criado_em")
+        )
+
+    context = {
+        "config_home": ConfiguracaoHome.get_solo(),
+        "eventos_com_videos": eventos_com_videos,
+        "evento_selecionado": evento_selecionado,
+        "videos": videos_lista,
+        "videos_sem_evento": videos_sem_evento,
+        "tem_videos": videos_lista.exists() or videos_sem_evento.exists(),
+        "nav_active": "videos",
+    }
+    return render(request, "home/videos.html", context)
+
+
 def loja(request):
     context = {
-        "produtos": Produto.objects.filter(ativo=True),
+        "produtos": Produto.objects.filter(ativo=True).prefetch_related("tamanhos"),
         "nav_active": "loja",
+        "cart_count": cart_count(request.session),
     }
     return render(request, "home/loja.html", context)
 
 
 def produto_detail(request, pk):
-    produto = get_object_or_404(Produto, pk=pk, ativo=True)
+    produto = get_object_or_404(
+        Produto.objects.prefetch_related("tamanhos"),
+        pk=pk,
+        ativo=True,
+    )
     context = {
         "produto": produto,
         "nav_active": "loja",
+        "cart_count": cart_count(request.session),
+        "form_carrinho": AdicionarCarrinhoForm(produto=produto),
     }
     return render(request, "home/produto_detail.html", context)
 

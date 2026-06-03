@@ -1,0 +1,69 @@
+{% extends "home/base.html" %}
+
+{% block title %}Carrinho | Loja | Mesa Brasileira{% endblock %}
+{% block main_class %}page-main{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--compact">
+  <div class="container page-hero-inner reveal">
+    <p class="eyebrow">Loja</p>
+    <h1>Carrinho</h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container checkout-layout reveal">
+    {% if vazio %}
+    <p class="empty-state">O carrinho está vazio.</p>
+    <a href="{% url 'home:loja' %}" class="btn btn-primary">Ver produtos</a>
+    {% else %}
+    <div class="cart-table-wrap">
+      <table class="cart-table">
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Tamanho</th>
+            <th>Preço</th>
+            <th>Qtd.</th>
+            <th>Subtotal</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for linha in linhas %}
+          <tr>
+            <td>
+              <a href="{% url 'home:produto_detail' linha.produto.pk %}">{{ linha.produto.nome }}</a>
+            </td>
+            <td>{{ linha.tamanho_exibir }}</td>
+            <td>{{ linha.preco_unitario }} €</td>
+            <td>
+              <form method="post" action="{% url 'home:carrinho_atualizar' %}" class="cart-qty-form">
+                {% csrf_token %}
+                <input type="hidden" name="line_id" value="{{ linha.id }}">
+                <input type="number" name="quantidade" value="{{ linha.quantidade }}" min="1" max="99" class="form-input form-input--sm">
+                <button type="submit" class="btn btn-ghost btn-sm">Atualizar</button>
+              </form>
+            </td>
+            <td>{{ linha.subtotal }} €</td>
+            <td>
+              <form method="post" action="{% url 'home:carrinho_remover' linha.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-ghost btn-sm" aria-label="Remover">×</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <aside class="checkout-summary">
+      <p class="checkout-summary-total"><span>Total</span> <strong>{{ subtotal }} €</strong></p>
+      <a href="{% url 'home:checkout' %}" class="btn btn-primary btn-lg btn-block">Finalizar compra</a>
+      <a href="{% url 'home:loja' %}" class="btn btn-outline btn-block">Continuar a comprar</a>
+    </aside>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

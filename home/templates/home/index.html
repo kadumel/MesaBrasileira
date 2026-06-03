@@ -100,48 +100,24 @@
 
 <section class="section section-videos" id="videos">
   <div class="container">
-    <header class="section-header reveal">
-      <p class="eyebrow">Memórias</p>
-      <h2>Vídeos dos eventos</h2>
-      <p>Momentos da roda publicados no Instagram — assista aos nossos encontros.</p>
+    <header class="section-header section-header--row reveal">
+      <div>
+        <p class="eyebrow">Memórias</p>
+        <h2>Vídeos dos eventos</h2>
+        <p>Destaques da roda no Instagram.</p>
+      </div>
+      <a href="{% url 'home:videos' %}" class="btn btn-outline btn-sm">Ver todos</a>
     </header>
 
     {% if videos %}
     <div class="video-grid reveal-stagger">
       {% for video in videos %}
-      <a
-        href="{{ video.instagram_url }}"
-        class="video-card"
-        target="_blank"
-        rel="noopener"
-        data-tilt
-      >
-        <div class="video-card-media">
-          {% if video.capa_exibir %}
-          <img src="{{ video.capa_exibir }}" alt="{{ video.titulo }}" loading="lazy">
-          {% else %}
-          <div class="video-placeholder">
-            <span class="play-icon" aria-hidden="true">▶</span>
-          </div>
-          {% endif %}
-          <div class="video-card-play" aria-hidden="true">
-            <span>▶</span>
-          </div>
-        </div>
-        <div class="video-card-body">
-          <h3>{{ video.titulo }}</h3>
-          {% if video.evento %}
-          <p>{{ video.evento.titulo }}</p>
-          {% endif %}
-        </div>
-      </a>
+      <div>{% include "home/includes/video_card.html" with video=video show_evento_label=True use_tilt=True %}</div>
       {% endfor %}
     </div>
     {% else %}
     <p class="empty-state reveal">
-      Adicione links de reels/posts do
-      <a href="{{ instagram_url }}" target="_blank" rel="noopener">Instagram</a>
-      no admin.
+      Marque vídeos como destaque no admin ou <a href="{% url 'home:videos' %}">veja todos os vídeos</a>.
     </p>
     {% endif %}
 

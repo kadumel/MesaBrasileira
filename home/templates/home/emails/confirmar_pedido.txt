@@ -1,0 +1,15 @@
+Olá {{ pedido.nome }},
+
+Obrigado pela sua encomenda na Mesa Brasileira.
+
+Pedido: {{ pedido.numero }}
+Total: {{ pedido.total }} €
+
+Para validar o seu email e continuar com o pagamento, abra o link abaixo (válido por 48 horas):
+
+{{ url_confirmacao }}
+
+Se não fez este pedido, ignore este email.
+
+Com respeito ao nosso samba,
+{{ site_nome }}

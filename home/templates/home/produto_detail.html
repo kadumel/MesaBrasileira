@@ -33,13 +33,33 @@
       {% if produto.descricao %}
       <div class="detail-text">{{ produto.descricao|linebreaks }}</div>
       {% endif %}
-      <div class="detail-actions">
-        {% if produto.link_compra %}
-        <a href="{{ produto.link_compra }}" class="btn btn-primary btn-lg" target="_blank" rel="noopener">Comprar agora</a>
-        {% else %}
-        <p class="muted">Contacte-nos pelo Instagram para encomendar.</p>
-        <a href="{{ instagram_url }}" class="btn btn-primary" target="_blank" rel="noopener">Instagram</a>
+
+      <form method="post" action="{% url 'home:carrinho_adicionar' produto.pk %}" class="cart-add-form">
+        {% csrf_token %}
+        {% if produto.requer_tamanho %}
+        <div class="form-group">
+          <label class="form-label" for="id_tamanho">Tamanho</label>
+          {{ form_carrinho.tamanho }}
+          {% if form_carrinho.tamanho.errors %}
+          <p class="form-hint error">{{ form_carrinho.tamanho.errors.0 }}</p>
+          {% endif %}
+          {% if not produto.tamanhos_ativos.exists %}
+          <p class="form-hint">Configure os tamanhos disponíveis no admin do site.</p>
+          {% endif %}
+        </div>
         {% endif %}
+        <div class="form-group">
+          <label class="form-label" for="id_quantidade">Quantidade</label>
+          {{ form_carrinho.quantidade }}
+        </div>
+        <div class="detail-actions">
+          <button type="submit" class="btn btn-primary btn-lg">Adicionar ao carrinho</button>
+          <button type="submit" name="next" value="carrinho" class="btn btn-outline">Adicionar e ver carrinho</button>
+        </div>
+      </form>
+
+      <div class="detail-actions" style="margin-top: 1rem;">
+        <a href="{% url 'home:carrinho' %}" class="btn btn-ghost">Carrinho{% if cart_count %} ({{ cart_count }}){% endif %}</a>
         <a href="{% url 'home:loja' %}" class="btn btn-outline">← Todos os produtos</a>
       </div>
     </div>

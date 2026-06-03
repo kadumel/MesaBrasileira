@@ -1,0 +1,22 @@
+{% extends "home/base.html" %}
+
+{% block title %}Confirme o email | Mesa Brasileira{% endblock %}
+{% block main_class %}page-main{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container checkout-status reveal">
+    <p class="eyebrow">Pedido {{ pedido.numero }}</p>
+    <h1>Verifique o seu email</h1>
+    <p class="page-hero-lead">
+      Enviámos um link de confirmação para <strong>{{ pedido.email }}</strong>.
+      Clique no link para validar os seus dados e avançar para o pagamento.
+    </p>
+    <p class="muted">O link é válido por 48 horas. Verifique também a pasta de spam.</p>
+    <p class="checkout-summary-total" style="margin-top: 2rem;">
+      <span>Total do pedido</span> <strong>{{ pedido.total }} €</strong>
+    </p>
+    <a href="{% url 'home:loja' %}" class="btn btn-outline">Voltar à loja</a>
+  </div>
+</section>
+{% endblock %}

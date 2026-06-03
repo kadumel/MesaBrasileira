@@ -1,0 +1,29 @@
+<a
+  href="{{ video.instagram_url }}"
+  class="video-card"
+  target="_blank"
+  rel="noopener"
+  {% if use_tilt %}data-tilt{% endif %}
+>
+  <div class="video-card-media">
+    {% if video.capa_exibir %}
+    <img src="{{ video.capa_exibir }}" alt="{{ video.titulo }}" loading="lazy">
+    {% else %}
+    <div class="video-placeholder">
+      <span class="play-icon" aria-hidden="true">▶</span>
+    </div>
+    {% endif %}
+    <div class="video-card-play" aria-hidden="true">
+      <span>▶</span>
+    </div>
+    {% if show_destaque_badge and video.destaque %}
+    <span class="badge badge-video-destaque">Destaque</span>
+    {% endif %}
+  </div>
+  <div class="video-card-body">
+    <h3>{{ video.titulo }}</h3>
+    {% if show_evento_label and video.evento %}
+    <p>{{ video.evento.titulo }}</p>
+    {% endif %}
+  </div>
+</a>

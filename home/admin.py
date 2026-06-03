@@ -6,10 +6,13 @@ from .models import (
     ConfiguracaoHome,
     EventoDestaque,
     EventoSamba,
+    ItemPedido,
     Patrocinador,
+    Pedido,
     PedidoMusica,
     Produto,
     SlideHome,
+    TamanhoProduto,
     VideoEvento,
 )
 
@@ -68,6 +71,13 @@ class ConfiguracaoHomeAdmin(admin.ModelAdmin):
                 "description": (
                     "Texto introdutório e limite da fila na página pública «Pedir música»."
                 ),
+            },
+        ),
+        (
+            "Vídeos",
+            {
+                "fields": ("videos_descricao",),
+                "description": "Texto introdutório da página pública «Vídeos» (/videos/).",
             },
         ),
     )
@@ -263,12 +273,84 @@ class PatrocinadorAdmin(admin.ModelAdmin):
         self.message_user(request, f"{ok} logo(s) importada(s) para o servidor.", level="success")
 
 
+class TamanhoProdutoInline(admin.TabularInline):
+    model = TamanhoProduto
+    extra = 0
+    fields = ("codigo", "ativo", "ordem")
+
+
+class ItemPedidoInline(admin.TabularInline):
+    model = ItemPedido
+    extra = 0
+    readonly_fields = ("nome_produto", "tamanho", "quantidade", "preco_unitario", "produto")
+    can_delete = False
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(Produto)
 class ProdutoAdmin(admin.ModelAdmin):
-    list_display = ("nome", "preco", "destaque", "ordem", "ativo")
-    list_editable = ("ordem", "ativo", "destaque")
-    list_filter = ("ativo", "destaque")
+    list_display = ("nome", "preco", "requer_tamanho", "destaque", "ordem", "ativo")
+    list_editable = ("ordem", "ativo", "destaque", "requer_tamanho")
+    list_filter = ("ativo", "destaque", "requer_tamanho")
     search_fields = ("nome",)
+    inlines = [TamanhoProdutoInline]
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "nome",
+                    "descricao",
+                    "preco",
+                    "requer_tamanho",
+                    "imagem",
+                    "imagem_url",
+                    "link_compra",
+                ),
+            },
+        ),
+        ("Publicação", {"fields": ("destaque", "ativo", "ordem")}),
+    )
+
+
+@admin.register(Pedido)
+class PedidoAdmin(admin.ModelAdmin):
+    list_display = (
+        "numero",
+        "nome",
+        "email",
+        "status",
+        "email_confirmado",
+        "total",
+        "criado_em",
+    )
+    list_filter = ("status", "email_confirmado", "metodo_pagamento")
+    search_fields = ("numero", "nome", "email", "telefone")
+    readonly_fields = (
+        "numero",
+        "token_confirmacao",
+        "token_expira_em",
+        "subtotal",
+        "total",
+        "criado_em",
+        "atualizado_em",
+        "email_confirmado_em",
+        "pago_em",
+    )
+    inlines = [ItemPedidoInline]
+    actions = ["marcar_como_pago"]
+
+    @admin.action(description="Marcar selecionados como pagos")
+    def marcar_como_pago(self, request, queryset):
+        from django.utils import timezone
+
+        atualizados = queryset.exclude(status=Pedido.STATUS_PAGO).update(
+            status=Pedido.STATUS_PAGO,
+            pago_em=timezone.now(),
+        )
+        self.message_user(request, f"{atualizados} pedido(s) marcado(s) como pago(s).")
 
 
 class PedidoMusicaInline(admin.TabularInline):
@@ -333,9 +415,9 @@ class PedidoMusicaAdmin(admin.ModelAdmin):
 
 @admin.register(VideoEvento)
 class VideoEventoAdmin(admin.ModelAdmin):
-    list_display = ("titulo", "evento", "ordem", "ativo", "preview")
-    list_editable = ("ordem", "ativo")
-    list_filter = ("ativo",)
+    list_display = ("titulo", "evento", "destaque", "ordem", "ativo", "preview")
+    list_editable = ("destaque", "ordem", "ativo")
+    list_filter = ("ativo", "destaque", "evento")
     actions = ["buscar_miniaturas_instagram"]
     readonly_fields = ("preview_capa",)
 
@@ -351,6 +433,7 @@ class VideoEventoAdmin(admin.ModelAdmin):
                     "thumbnail",
                     "thumbnail_url",
                     "ordem",
+                    "destaque",
                     "ativo",
                 ),
             },

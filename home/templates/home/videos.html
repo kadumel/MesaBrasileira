@@ -1,0 +1,96 @@
+{% extends "home/base.html" %}
+
+{% block title %}Vídeos | Mesa Brasileira{% endblock %}
+{% block meta_description %}Vídeos dos eventos do Projeto Mesa Brasileira — momentos da roda no Instagram.{% endblock %}
+{% block main_class %}page-main{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container page-hero-inner reveal">
+    <p class="eyebrow">Memórias</p>
+    <h1>Vídeos dos eventos</h1>
+    <p class="page-hero-lead">{{ config_home.videos_lead_exibir|linebreaksbr }}</p>
+  </div>
+</section>
+
+<section class="section section-videos-page">
+  <div class="container">
+    {% if eventos_com_videos or videos_sem_evento %}
+    <div class="videos-page-layout reveal">
+      {% if eventos_com_videos %}
+      <aside class="videos-eventos-nav" aria-label="Eventos com vídeos">
+        <h2 class="videos-eventos-nav-title">Eventos</h2>
+        <ul class="videos-eventos-list">
+          {% for evento in eventos_com_videos %}
+          <li>
+            <a
+              href="{% url 'home:videos_evento' evento.pk %}"
+              class="videos-evento-link{% if evento_selecionado and evento.pk == evento_selecionado.pk %} videos-evento-link--active{% endif %}"
+            >
+              <span class="videos-evento-link-titulo">{{ evento.titulo }}</span>
+              {% if evento.data %}
+              <time datetime="{{ evento.data|date:'c' }}" class="videos-evento-link-data">
+                {{ evento.data|date:"d/m/Y" }}
+              </time>
+              {% endif %}
+              <span class="videos-evento-link-count">{{ evento.qtd_videos }} vídeo{{ evento.qtd_videos|pluralize:"s" }}</span>
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </aside>
+      {% endif %}
+
+      <div class="videos-page-main">
+        {% if evento_selecionado %}
+        <header class="section-header videos-page-header">
+          <div>
+            <h2>{{ evento_selecionado.titulo }}</h2>
+            <p>
+              {% if evento_selecionado.data %}
+              <time datetime="{{ evento_selecionado.data|date:'c' }}">{{ evento_selecionado.data|date:"d/m/Y H:i" }}</time>
+              ·
+              {% endif %}
+              {{ evento_selecionado.local }}
+            </p>
+          </div>
+        </header>
+        {% endif %}
+
+        {% if videos %}
+        <div class="video-grid reveal-stagger">
+          {% for video in videos %}
+          <div>{% include "home/includes/video_card.html" with video=video show_destaque_badge=True show_evento_label=False use_tilt=True %}</div>
+          {% endfor %}
+        </div>
+        {% elif evento_selecionado %}
+        <p class="empty-state">Este evento ainda não tem vídeos ativos.</p>
+        {% endif %}
+
+        {% if videos_sem_evento %}
+        <header class="section-header" style="margin-top: 2.5rem;">
+          <h2>Outros vídeos</h2>
+          <p>Publicações sem evento associado.</p>
+        </header>
+        <div class="video-grid reveal-stagger">
+          {% for video in videos_sem_evento %}
+          <div>{% include "home/includes/video_card.html" with video=video show_destaque_badge=True show_evento_label=False use_tilt=True %}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="instagram-cta reveal" style="margin-top: 2rem;">
+      <a href="{{ instagram_url }}" class="btn btn-outline btn-lg" target="_blank" rel="noopener">
+        Seguir @mesabrasileirapt no Instagram
+      </a>
+    </div>
+    {% else %}
+    <p class="empty-state reveal">
+      Ainda não há vídeos. Adicione links no admin em «Vídeos de eventos» e associe a um evento de samba.
+    </p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

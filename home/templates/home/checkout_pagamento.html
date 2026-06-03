@@ -1,0 +1,50 @@
+{% extends "home/base.html" %}
+
+{% block title %}Pagamento {{ pedido.numero }} | Mesa Brasileira{% endblock %}
+{% block main_class %}page-main{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--compact">
+  <div class="container page-hero-inner reveal">
+    <p class="eyebrow">Pedido {{ pedido.numero }}</p>
+    <h1>Pagamento</h1>
+    <p class="page-hero-lead">Total: <strong>{{ pedido.total }} €</strong>. Indique como pretende pagar.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container checkout-layout reveal">
+    <div class="checkout-payment-info">
+      <h2 class="checkout-subtitle">Instruções</h2>
+      {% if mbway_telefone %}
+      <p><strong>MB Way:</strong> envie {{ pedido.total }} € para <strong>{{ mbway_telefone }}</strong> e indique o número do pedido na descrição.</p>
+      {% endif %}
+      {% if iban %}
+      <p><strong>Transferência:</strong> IBAN <code class="checkout-iban">{{ iban }}</code> — referência: <strong>{{ pedido.numero }}</strong></p>
+      {% endif %}
+      {% if not mbway_telefone and not iban %}
+      <p class="muted">Configure LOJA_MBWAY_TELEFONE e LOJA_IBAN no ambiente para mostrar dados de pagamento aqui.</p>
+      {% endif %}
+    </div>
+
+    <form method="post" class="checkout-form">
+      {% csrf_token %}
+      <h2 class="checkout-subtitle">Forma de pagamento</h2>
+      {% for field in form %}
+      <div class="form-group">
+        {% if field.name == "metodo_pagamento" %}
+        <div class="checkout-radio-group">{{ field }}</div>
+        {% else %}
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% endif %}
+        {% if field.errors %}
+        <p class="form-hint error">{{ field.errors.0 }}</p>
+        {% endif %}
+      </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary btn-lg btn-block">Confirmar pagamento</button>
+    </form>
+  </div>
+</section>
+{% endblock %}
