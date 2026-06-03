@@ -197,12 +197,18 @@ LOJA_TOKEN_EMAIL_HORAS = int(_env_strip("LOJA_TOKEN_EMAIL_HORAS", "48"))
 LOJA_MBWAY_TELEFONE = _env_strip("LOJA_MBWAY_TELEFONE")
 LOJA_IBAN = _env_strip("LOJA_IBAN")
 
+_n8n_webhook_url = _env_strip("N8N_WEBHOOK_URL")
 _email_host_user = _env_strip("EMAIL_HOST_USER")
 _email_backend = _env_strip("EMAIL_BACKEND")
-if _email_backend:
+
+# Produção (Railway): SMTP costuma falhar — use webhook n8n (HTTPS).
+if _n8n_webhook_url:
+    EMAIL_BACKEND = "home.email_backends.n8n_webhook.N8nWebhookEmailBackend"
+    N8N_WEBHOOK_URL = _n8n_webhook_url
+    N8N_WEBHOOK_SECRET = _env_strip("N8N_WEBHOOK_SECRET")
+elif _email_backend:
     EMAIL_BACKEND = _email_backend
 elif _email_host_user:
-    # SMTP ativo quando há credenciais, mesmo sem EMAIL_BACKEND no .env
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 else:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

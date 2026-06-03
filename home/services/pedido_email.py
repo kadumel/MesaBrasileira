@@ -57,6 +57,11 @@ def enviar_email_confirmacao(pedido: Pedido) -> tuple[bool, str | None]:
         logger.warning(
             "EMAIL_BACKEND é consola — o email não chega à caixa de entrada."
         )
+    elif "n8n" in settings.EMAIL_BACKEND:
+        logger.info(
+            "Email via n8n webhook: %s",
+            getattr(settings, "N8N_WEBHOOK_URL", ""),
+        )
 
     assunto = f"Confirme o seu pedido {pedido.numero} — Mesa Brasileira"
     ok, erro = _enviar_email_pedido(

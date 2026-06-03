@@ -34,6 +34,8 @@ class Command(BaseCommand):
         }
 
         self.stdout.write(f"Backend: {settings.EMAIL_BACKEND}")
+        if getattr(settings, "N8N_WEBHOOK_URL", ""):
+            self.stdout.write(f"Provedor: n8n webhook → {settings.N8N_WEBHOOK_URL}")
         self.stdout.write(f"Host: {settings.EMAIL_HOST}:{settings.EMAIL_PORT}")
         self.stdout.write(f"From: {remetente}")
         self.stdout.write(f"To: {destino}")
