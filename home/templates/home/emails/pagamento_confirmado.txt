@@ -1,0 +1,21 @@
+Olá {{ pedido.nome }},
+
+Confirmámos o recebimento do pagamento do seu pedido {{ pedido.numero }}.
+
+Total pago: {{ pedido.total }} €
+
+Vamos preparar a sua encomenda e enviá-la para:
+
+{{ pedido.endereco_entrega }}
+{% if pedido.notas_entrega %}
+
+Notas que indicou: {{ pedido.notas_entrega }}
+{% endif %}
+
+Assim que a encomenda for expedida, entraremos em contacto se for necessário.
+
+Qualquer dúvida, responda a este email ou contacte-nos pelo Instagram.
+
+Com respeito ao nosso samba,
+{{ site_nome }}
+{% if site_url %}{{ site_url }}{% endif %}

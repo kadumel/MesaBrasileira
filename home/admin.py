@@ -322,8 +322,9 @@ class PedidoAdmin(admin.ModelAdmin):
         "nome",
         "email",
         "status",
-        "email_confirmado",
+        "metodo_pagamento",
         "total",
+        "pago_em",
         "criado_em",
     )
     list_filter = ("status", "email_confirmado", "metodo_pagamento")
@@ -338,19 +339,138 @@ class PedidoAdmin(admin.ModelAdmin):
         "atualizado_em",
         "email_confirmado_em",
         "pago_em",
+        "email_pagamento_confirmado_em",
     )
     inlines = [ItemPedidoInline]
-    actions = ["marcar_como_pago"]
+    actions = ["marcar_como_pago", "reenviar_email_pagamento"]
+    fieldsets = (
+        (
+            "Pedido",
+            {
+                "fields": ("numero", "status", "subtotal", "total"),
+                "description": (
+                    "Quando receber o MB Way ou transferência, altere o estado para "
+                    "«Pago — a preparar entrega» ou use a ação em massa. "
+                    "O cliente recebe email automaticamente."
+                ),
+            },
+        ),
+        (
+            "Cliente e entrega",
+            {
+                "fields": (
+                    "nome",
+                    "email",
+                    "telefone",
+                    "morada",
+                    "codigo_postal",
+                    "cidade",
+                    "pais",
+                    "notas_entrega",
+                ),
+            },
+        ),
+        (
+            "Pagamento",
+            {
+                "fields": (
+                    "metodo_pagamento",
+                    "referencia_pagamento",
+                    "pago_em",
+                    "email_pagamento_confirmado_em",
+                ),
+            },
+        ),
+        (
+            "Confirmação de email (checkout)",
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    "email_confirmado",
+                    "email_confirmado_em",
+                    "token_confirmacao",
+                    "token_expira_em",
+                ),
+            },
+        ),
+        (
+            "Datas",
+            {
+                "classes": ("collapse",),
+                "fields": ("criado_em", "atualizado_em"),
+            },
+        ),
+    )
 
-    @admin.action(description="Marcar selecionados como pagos")
+    def save_model(self, request, obj, form, change):
+        status_anterior = None
+        if change and obj.pk:
+            status_anterior = (
+                Pedido.objects.filter(pk=obj.pk)
+                .values_list("status", flat=True)
+                .first()
+            )
+        super().save_model(request, obj, form, change)
+        if (
+            obj.status == Pedido.STATUS_PAGO
+            and status_anterior != Pedido.STATUS_PAGO
+        ):
+            _, erro = obj.marcar_como_pago(enviar_email=True)
+            if erro:
+                self.message_user(
+                    request,
+                    f"Pedido {obj.numero} marcado como pago, mas o email falhou: {erro}",
+                    level="warning",
+                )
+            else:
+                self.message_user(
+                    request,
+                    f"Pedido {obj.numero} pago — email enviado para {obj.email}.",
+                    level="success",
+                )
+
+    @admin.action(description="Marcar como pago e enviar email ao cliente")
     def marcar_como_pago(self, request, queryset):
+        pagos = 0
+        emails = 0
+        falhas = []
+        for pedido in queryset.select_related():
+            alterado, erro = pedido.marcar_como_pago(enviar_email=True)
+            if pedido.status == Pedido.STATUS_PAGO:
+                pagos += 1
+            if pedido.email_pagamento_confirmado_em:
+                emails += 1
+            if erro:
+                falhas.append(f"{pedido.numero}: {erro}")
+        msg = f"{pagos} pedido(s) como pago(s). {emails} email(s) de confirmação enviado(s)."
+        if falhas:
+            self.message_user(
+                request,
+                f"{msg} Falhas: {'; '.join(falhas[:3])}",
+                level="warning",
+            )
+        else:
+            self.message_user(request, msg, level="success")
+
+    @admin.action(description="Reenviar email «pagamento recebido»")
+    def reenviar_email_pagamento(self, request, queryset):
+        from home.services.pedido_email import enviar_email_pagamento_confirmado
         from django.utils import timezone
 
-        atualizados = queryset.exclude(status=Pedido.STATUS_PAGO).update(
-            status=Pedido.STATUS_PAGO,
-            pago_em=timezone.now(),
-        )
-        self.message_user(request, f"{atualizados} pedido(s) marcado(s) como pago(s).")
+        ok = 0
+        for pedido in queryset.filter(status=Pedido.STATUS_PAGO):
+            enviado, erro = enviar_email_pagamento_confirmado(pedido)
+            if enviado:
+                pedido.email_pagamento_confirmado_em = timezone.now()
+                pedido.save(update_fields=["email_pagamento_confirmado_em", "atualizado_em"])
+                ok += 1
+            elif erro:
+                self.message_user(
+                    request,
+                    f"{pedido.numero}: {erro}",
+                    level="warning",
+                )
+        self.message_user(request, f"{ok} email(s) reenviado(s).", level="success")
 
 
 class PedidoMusicaInline(admin.TabularInline):

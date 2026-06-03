@@ -1,0 +1,12 @@
+Teste de email — {{ site_nome }}
+
+Se recebeu este email, o SMTP está a funcionar.
+
+Versão HTML: abra o email num cliente que suporte HTML para ver o logo e as cores da marca.
+
+Site: {{ site_url }}
+SMTP: {{ smtp_host }}:{{ smtp_port }}
+Remetente: {{ remetente }}
+
+Com respeito ao nosso samba,
+{{ site_nome }}

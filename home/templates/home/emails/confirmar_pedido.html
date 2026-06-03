@@ -1,23 +1,48 @@
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-  <meta charset="UTF-8">
-  <title>Confirmar pedido {{ pedido.numero }}</title>
-</head>
-<body style="font-family: sans-serif; line-height: 1.6; color: #333;">
-  <p>Olá <strong>{{ pedido.nome }}</strong>,</p>
-  <p>Obrigado pela sua encomenda na <strong>{{ site_nome }}</strong>.</p>
-  <p>
-    <strong>Pedido:</strong> {{ pedido.numero }}<br>
-    <strong>Total:</strong> {{ pedido.total }} €
-  </p>
-  <p>Para validar o seu email e continuar com o pagamento, clique no botão:</p>
-  <p>
-    <a href="{{ url_confirmacao }}" style="display:inline-block;padding:12px 24px;background:#2d5a3d;color:#fff;text-decoration:none;border-radius:6px;">
-      Confirmar email e pagar
-    </a>
-  </p>
-  <p style="font-size:0.9em;color:#666;">Ou copie este link: {{ url_confirmacao }}</p>
-  <p style="font-size:0.85em;color:#888;">Se não fez este pedido, ignore este email.</p>
-</body>
-</html>
+{% extends "home/emails/base.html" %}
+
+{% block title %}Confirmar pedido {{ pedido.numero }} | {{ site_nome }}{% endblock %}
+
+{% block content %}
+<p style="margin:0 0 16px;font-size:17px;color:{{ cor_brown }};">
+  Olá <strong>{{ pedido.nome }}</strong>,
+</p>
+<p style="margin:0 0 20px;color:{{ cor_brown }};">
+  Obrigado pela sua encomenda na <strong>{{ site_nome }}</strong>.
+</p>
+
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 24px;background-color:{{ cor_cream_light }};border:1px solid {{ cor_border }};border-radius:10px;">
+  <tr>
+    <td style="padding:16px 18px;">
+      <p style="margin:0 0 8px;font-size:14px;color:{{ cor_brown_muted }};">Pedido</p>
+      <p style="margin:0 0 12px;font-size:18px;font-weight:bold;color:{{ cor_brown }};">{{ pedido.numero }}</p>
+      <p style="margin:0;font-size:14px;color:{{ cor_brown_muted }};">Total</p>
+      <p style="margin:4px 0 0;font-size:22px;font-weight:bold;color:{{ cor_green }};">{{ pedido.total }} €</p>
+    </td>
+  </tr>
+</table>
+
+<p style="margin:0 0 20px;color:{{ cor_brown }};">
+  Para validar o seu email e continuar com o pagamento, clique no botão abaixo (válido por 48 horas):
+</p>
+
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 24px;">
+  <tr>
+    <td align="center" style="border-radius:8px;background-color:{{ cor_green }};">
+      <a href="{{ url_confirmacao }}" style="display:inline-block;padding:14px 32px;font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none;border-radius:8px;">
+        Confirmar email e pagar
+      </a>
+    </td>
+  </tr>
+</table>
+
+<p style="margin:0 0 8px;font-size:13px;color:{{ cor_brown_muted }};">
+  Ou copie este link no browser:
+</p>
+<p style="margin:0 0 20px;font-size:12px;word-break:break-all;">
+  <a href="{{ url_confirmacao }}" style="color:{{ cor_green }};">{{ url_confirmacao }}</a>
+</p>
+
+<p style="margin:0;font-size:13px;color:{{ cor_brown_muted }};">
+  Se não fez este pedido, ignore este email.
+</p>
+{% endblock %}

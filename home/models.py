@@ -290,7 +290,7 @@ class Pedido(models.Model):
     STATUS = [
         (STATUS_AGUARDA_EMAIL, "Aguarda confirmação de email"),
         (STATUS_AGUARDA_PAGAMENTO, "Aguarda pagamento"),
-        (STATUS_PAGO, "Pago"),
+        (STATUS_PAGO, "Pago — a preparar entrega"),
         (STATUS_CANCELADO, "Cancelado"),
         (STATUS_EXPIRADO, "Expirado"),
     ]
@@ -335,6 +335,11 @@ class Pedido(models.Model):
     atualizado_em = models.DateTimeField(auto_now=True)
     email_confirmado_em = models.DateTimeField(null=True, blank=True)
     pago_em = models.DateTimeField(null=True, blank=True)
+    email_pagamento_confirmado_em = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Email «pagamento recebido» enviado em",
+    )
 
     class Meta:
         ordering = ["-criado_em"]
@@ -388,6 +393,40 @@ class Pedido(models.Model):
             self.email_confirmado
             and self.status == self.STATUS_AGUARDA_PAGAMENTO
         )
+
+    @property
+    def endereco_entrega(self) -> str:
+        return (
+            f"{self.morada}, {self.codigo_postal} {self.cidade}, {self.pais}"
+        )
+
+    def marcar_como_pago(self, enviar_email: bool = True) -> tuple[bool, str | None]:
+        """
+        Marca o pedido como pago e envia email ao cliente (se ainda não enviado).
+        Retorna (houve_alteracao, erro_email ou None).
+        """
+        from home.services.pedido_email import enviar_email_pagamento_confirmado
+
+        agora = timezone.now()
+        mudou_status = self.status != self.STATUS_PAGO
+        self.status = self.STATUS_PAGO
+        if not self.pago_em:
+            self.pago_em = agora
+
+        erro_email = None
+        deve_enviar = enviar_email and not self.email_pagamento_confirmado_em
+        if deve_enviar:
+            ok, erro_email = enviar_email_pagamento_confirmado(self)
+            if ok:
+                self.email_pagamento_confirmado_em = agora
+
+        update_fields = ["status", "pago_em", "atualizado_em"]
+        if self.email_pagamento_confirmado_em:
+            update_fields.append("email_pagamento_confirmado_em")
+        if mudou_status or deve_enviar:
+            self.save(update_fields=update_fields)
+
+        return (mudou_status or bool(deve_enviar and not erro_email)), erro_email
 
 
 class ItemPedido(models.Model):

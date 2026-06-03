@@ -1,0 +1,47 @@
+{% extends "home/emails/base.html" %}
+
+{% block title %}Pagamento recebido — {{ pedido.numero }} | {{ site_nome }}{% endblock %}
+
+{% block content %}
+<p style="margin:0 0 16px;font-size:17px;color:{{ cor_brown }};">
+  Olá <strong>{{ pedido.nome }}</strong>,
+</p>
+<p style="margin:0 0 20px;color:{{ cor_brown }};">
+  Confirmámos o <strong>recebimento do pagamento</strong> do seu pedido
+  <strong style="color:{{ cor_green }};">{{ pedido.numero }}</strong>.
+</p>
+
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 24px;background-color:{{ cor_cream_light }};border:1px solid {{ cor_border }};border-radius:10px;">
+  <tr>
+    <td style="padding:16px 18px;">
+      <p style="margin:0;font-size:14px;color:{{ cor_brown_muted }};">Total pago</p>
+      <p style="margin:4px 0 0;font-size:22px;font-weight:bold;color:{{ cor_green }};">{{ pedido.total }} €</p>
+    </td>
+  </tr>
+</table>
+
+<p style="margin:0 0 12px;color:{{ cor_brown }};">
+  Vamos preparar a sua encomenda e enviá-la para:
+</p>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 24px;border-left:4px solid {{ cor_green }};background-color:{{ cor_cream_light }};">
+  <tr>
+    <td style="padding:14px 18px;font-size:15px;color:{{ cor_brown }};line-height:1.5;">
+      {{ pedido.endereco_entrega }}
+    </td>
+  </tr>
+</table>
+
+{% if pedido.notas_entrega %}
+<p style="margin:0 0 20px;font-size:15px;color:{{ cor_brown }};">
+  <strong>Notas que indicou:</strong> {{ pedido.notas_entrega }}
+</p>
+{% endif %}
+
+<p style="margin:0 0 20px;color:{{ cor_brown }};">
+  Assim que a encomenda for expedida, entraremos em contacto se for necessário.
+</p>
+
+<p style="margin:0;font-size:14px;color:{{ cor_brown_muted }};">
+  Qualquer dúvida, responda a este email ou contacte-nos pelo Instagram.
+</p>
+{% endblock %}

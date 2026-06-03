@@ -1,10 +1,13 @@
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
+from django.template.loader import render_to_string
+
+from home.services.email_branding import contexto_email_base
 
 
 class Command(BaseCommand):
-    help = "Testa o envio de email com as definições atuais (SMTP / consola)."
+    help = "Testa o envio de email HTML (logo e cores) com as definições atuais."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -22,17 +25,31 @@ class Command(BaseCommand):
             )
             return
 
+        remetente = settings.DEFAULT_FROM_EMAIL
+        contexto = {
+            **contexto_email_base(),
+            "remetente": remetente,
+            "smtp_host": settings.EMAIL_HOST,
+            "smtp_port": settings.EMAIL_PORT,
+        }
+
         self.stdout.write(f"Backend: {settings.EMAIL_BACKEND}")
         self.stdout.write(f"Host: {settings.EMAIL_HOST}:{settings.EMAIL_PORT}")
-        self.stdout.write(f"From: {settings.DEFAULT_FROM_EMAIL}")
+        self.stdout.write(f"From: {remetente}")
         self.stdout.write(f"To: {destino}")
+        self.stdout.write(f"Logo: {contexto['logo_url']}")
+
+        assunto = f"Teste de email — {contexto['site_nome']}"
+        texto = render_to_string("home/emails/testar_email.txt", contexto)
+        html = render_to_string("home/emails/testar_email.html", contexto)
 
         try:
             send_mail(
-                "Teste Mesa Brasileira",
-                "Se recebeu este email, o SMTP está a funcionar.",
-                settings.DEFAULT_FROM_EMAIL,
+                assunto,
+                texto,
+                remetente,
                 [destino],
+                html_message=html,
                 fail_silently=False,
             )
         except Exception as exc:
@@ -42,8 +59,13 @@ class Command(BaseCommand):
         if "console" in settings.EMAIL_BACKEND:
             self.stdout.write(
                 self.style.WARNING(
-                    "Modo consola: o texto apareceu no terminal, não na caixa de entrada."
+                    "Modo consola: o HTML aparece no terminal, não na caixa de entrada."
                 )
             )
         else:
-            self.stdout.write(self.style.SUCCESS("Email enviado com sucesso."))
+            self.stdout.write(
+                self.style.SUCCESS(
+                    "Email HTML enviado. Se só vir texto simples, abra «Mostrar imagens» "
+                    "ou verifique se o cliente está em modo texto."
+                )
+            )

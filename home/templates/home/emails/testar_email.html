@@ -1,0 +1,36 @@
+{% extends "home/emails/base.html" %}
+
+{% block title %}Teste de email | {{ site_nome }}{% endblock %}
+
+{% block content %}
+<p style="margin:0 0 16px;font-size:17px;color:{{ cor_brown }};">
+  Olá,
+</p>
+<p style="margin:0 0 20px;color:{{ cor_brown }};">
+  Este é um <strong>email de teste</strong> da loja {{ site_nome }}.
+</p>
+<p style="margin:0 0 20px;color:{{ cor_brown }};">
+  Se está a ver o logo, as cores castanho e verde e o botão abaixo, o envio HTML está a funcionar corretamente.
+</p>
+
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 24px;">
+  <tr>
+    <td align="center" style="border-radius:8px;background-color:{{ cor_green }};">
+      <a href="{{ site_url }}" style="display:inline-block;padding:14px 32px;font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none;border-radius:8px;">
+        Visitar o site
+      </a>
+    </td>
+  </tr>
+</table>
+
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:{{ cor_cream_light }};border:1px solid {{ cor_border }};border-radius:10px;">
+  <tr>
+    <td style="padding:14px 18px;font-size:13px;color:{{ cor_brown_muted }};line-height:1.5;">
+      <strong style="color:{{ cor_brown }};">SMTP:</strong> {{ smtp_host }}:{{ smtp_port }}<br>
+      <strong style="color:{{ cor_brown }};">Remetente:</strong> {{ remetente }}
+    </td>
+  </tr>
+</table>
+{% endblock %}
+
+{% block footer_note %}Email de teste — pode ignorar{% endblock %}
