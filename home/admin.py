@@ -61,6 +61,16 @@ class ConfiguracaoHomeAdmin(admin.ModelAdmin):
                 ),
             },
         ),
+        (
+            "Pedir música",
+            {
+                "fields": ("limite_pedidos_em_fila",),
+                "description": (
+                    "Limite de pedidos com estado «Em fila» na página pública. "
+                    "Ao atingir o máximo, o formulário de novos pedidos fica bloqueado."
+                ),
+            },
+        ),
     )
 
     def has_add_permission(self, request):

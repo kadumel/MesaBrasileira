@@ -27,6 +27,24 @@ def user_pode_marcar(user):
     return user.is_authenticated
 
 
+def _contagem_em_fila(evento_samba):
+    if not evento_samba:
+        return 0
+    return evento_samba.pedidos.filter(tocado=False).count()
+
+
+def _fila_limite_context(evento_samba):
+    config = ConfiguracaoHome.get_solo()
+    limite = config.limite_pedidos_em_fila
+    total_em_fila = _contagem_em_fila(evento_samba)
+    return {
+        "config_home": config,
+        "limite_pedidos_em_fila": limite,
+        "total_em_fila": total_em_fila,
+        "fila_cheia": bool(evento_samba and total_em_fila >= limite),
+    }
+
+
 def _evento_pedidos_context():
     evento_samba = (
         EventoSamba.objects.filter(ativo=True, aceita_pedidos=True)
@@ -42,6 +60,7 @@ def _evento_pedidos_context():
         "evento_samba": evento_samba,
         "pedidos": pedidos,
         "form_pedido": form,
+        **_fila_limite_context(evento_samba),
     }
 
 
@@ -113,6 +132,26 @@ def pedido_musica(request):
         ativo=True,
         aceita_pedidos=True,
     )
+    config = ConfiguracaoHome.get_solo()
+    em_fila = _contagem_em_fila(evento)
+    if em_fila >= config.limite_pedidos_em_fila:
+        msg = (
+            f"A fila está cheia ({em_fila}/{config.limite_pedidos_em_fila} em espera). "
+            "Aguarde a roda tocar mais músicas antes de pedir outra."
+        )
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse(
+                {
+                    "ok": False,
+                    "fila_cheia": True,
+                    "error": msg,
+                    "total_em_fila": em_fila,
+                    "limite_em_fila": config.limite_pedidos_em_fila,
+                },
+                status=403,
+            )
+        return HttpResponseRedirect(reverse("home:pedir_musica"))
+
     form = PedidoMusicaForm(request.POST)
     if form.is_valid():
         pedido = form.save(commit=False)
@@ -171,6 +210,9 @@ def marcar_pedido_tocado(request, pk):
 @require_GET
 def fila_pedidos_json(request, evento_id):
     evento = get_object_or_404(EventoSamba, pk=evento_id, ativo=True)
+    config = ConfiguracaoHome.get_solo()
+    limite = config.limite_pedidos_em_fila
+    total_em_fila = _contagem_em_fila(evento)
     pedidos = evento.pedidos.all().order_by("tocado", "id")[:50]
     data = [
         {
@@ -189,6 +231,9 @@ def fila_pedidos_json(request, evento_id):
         {
             "pedidos": data,
             "pode_marcar": user_pode_marcar(request.user),
+            "limite_em_fila": limite,
+            "total_em_fila": total_em_fila,
+            "fila_cheia": total_em_fila >= limite,
         }
     )
     response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"

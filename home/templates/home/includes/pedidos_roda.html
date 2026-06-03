@@ -22,23 +22,51 @@
       </div>
     </div>
 
+    <div
+      class="pedido-fila-resumo{% if fila_cheia %} pedido-fila-resumo--cheia{% endif %}"
+      id="pedido-fila-resumo"
+    >
+      <p class="pedido-fila-contador">
+        <span class="pedido-fila-contador-label">Pedidos em fila</span>
+        <span class="pedido-fila-contador-valores" aria-live="polite">
+          <strong id="pedido-fila-total">{{ total_em_fila }}</strong>
+          <span class="pedido-fila-contador-sep" aria-hidden="true">/</span>
+          <span id="pedido-fila-limite">{{ limite_pedidos_em_fila }}</span>
+          <span class="pedido-fila-contador-sufixo">permitidos</span>
+        </span>
+      </p>
+      <p
+        class="pedido-fila-cheia"
+        id="pedido-fila-aviso"
+        role="alert"
+        {% if not fila_cheia %}hidden{% endif %}
+      >
+        <strong>Fila cheia.</strong>
+        Aguarde a roda tocar mais músicas antes de enviar outro pedido.
+      </p>
+    </div>
+
     <form
       id="form-pedido"
-      class="pedido-form"
+      class="pedido-form{% if fila_cheia %} pedido-form--bloqueado{% endif %}"
       method="post"
       action="{% url 'home:pedido_musica' %}"
       data-evento-id="{{ evento_samba.pk }}"
       data-fila-url="{% url 'home:fila_pedidos' evento_samba.pk %}"
+      data-limite-em-fila="{{ limite_pedidos_em_fila }}"
+      data-fila-cheia="{% if fila_cheia %}1{% else %}0{% endif %}"
     >
       {% csrf_token %}
       <input type="hidden" name="evento_id" value="{{ evento_samba.pk }}">
-      {{ form_pedido.musica }}
-      {{ form_pedido.artista }}
-      {{ form_pedido.pedido_por }}
-      {{ form_pedido.mensagem }}
-      <button type="submit" class="btn btn-primary btn-block">
-        Enviar pedido
-      </button>
+      <fieldset class="pedido-form-fieldset" {% if fila_cheia %}disabled{% endif %}>
+        {{ form_pedido.musica }}
+        {{ form_pedido.artista }}
+        {{ form_pedido.pedido_por }}
+        {{ form_pedido.mensagem }}
+        <button type="submit" class="btn btn-primary btn-block" {% if fila_cheia %}disabled{% endif %}>
+          Enviar pedido
+        </button>
+      </fieldset>
       <p class="form-hint" id="form-feedback" role="status"></p>
     </form>
     {% else %}

@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -417,6 +418,15 @@ class ConfiguracaoHome(models.Model):
         null=True,
         verbose_name="Capa do vídeo",
         help_text="Imagem exibida antes de dar play (opcional).",
+    )
+    limite_pedidos_em_fila = models.PositiveIntegerField(
+        default=15,
+        validators=[MinValueValidator(1), MaxValueValidator(200)],
+        verbose_name="Máximo de pedidos «Em fila»",
+        help_text=(
+            "Na página «Pedir música», quando existir este número de músicas "
+            "à espera (não tocadas), o formulário de novos pedidos fica bloqueado."
+        ),
     )
 
     class Meta:

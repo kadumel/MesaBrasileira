@@ -294,6 +294,45 @@
     });
   }
 
+  function aplicarLimiteFila(data) {
+    const aviso = document.getElementById("pedido-fila-aviso");
+    const resumo = document.getElementById("pedido-fila-resumo");
+    if (!form) return;
+
+    const limite =
+      data.limite_em_fila !== undefined
+        ? Number(data.limite_em_fila)
+        : Number(form.dataset.limiteEmFila || 0);
+    const total =
+      data.total_em_fila !== undefined
+        ? Number(data.total_em_fila)
+        : Number(document.getElementById("pedido-fila-total")?.textContent || 0);
+    const cheia =
+      data.fila_cheia === true ||
+      data.fila_cheia === 1 ||
+      data.fila_cheia === "1" ||
+      (limite > 0 && total >= limite);
+
+    form.dataset.filaCheia = cheia ? "1" : "0";
+    form.classList.toggle("pedido-form--bloqueado", cheia);
+    if (resumo) {
+      resumo.classList.toggle("pedido-fila-resumo--cheia", cheia);
+    }
+
+    const fieldset = form.querySelector(".pedido-form-fieldset");
+    const btn = form.querySelector('button[type="submit"]');
+    if (fieldset) fieldset.disabled = cheia;
+    if (btn) btn.disabled = cheia;
+
+    const totalEl = document.getElementById("pedido-fila-total");
+    const limiteEl = document.getElementById("pedido-fila-limite");
+    if (totalEl) totalEl.textContent = String(total);
+    if (limiteEl) limiteEl.textContent = String(limite);
+    if (aviso) {
+      aviso.hidden = !cheia;
+    }
+  }
+
   async function refreshQueue() {
     if (!form || refreshPaused || !queueList) return;
     const url = form.dataset.filaUrl;
@@ -309,6 +348,7 @@
       if (!Array.isArray(data.pedidos)) {
         return;
       }
+      aplicarLimiteFila(data);
       atualizarFila(data.pedidos);
     } catch (_) {
       /* ignore polling errors */
@@ -373,8 +413,22 @@
   }
 
   if (form) {
+    aplicarLimiteFila({
+      limite_em_fila: form.dataset.limiteEmFila,
+      total_em_fila: document.getElementById("pedido-fila-total")?.textContent,
+      fila_cheia: form.dataset.filaCheia === "1",
+    });
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      if (form.dataset.filaCheia === "1") {
+        if (feedback) {
+          feedback.textContent =
+            "A fila está cheia. Aguarde a roda tocar mais músicas.";
+          feedback.classList.add("error");
+        }
+        return;
+      }
       if (feedback) {
         feedback.textContent = "";
         feedback.className = "form-hint";
@@ -399,6 +453,13 @@
           }
           form.reset();
           await refreshQueue();
+        } else if (data.fila_cheia) {
+          aplicarLimiteFila(data);
+          if (feedback) {
+            feedback.textContent =
+              data.error || "A fila está cheia. Aguarde mais músicas serem tocadas.";
+            feedback.classList.add("error");
+          }
         } else if (feedback) {
           feedback.textContent = "Verifique os campos e tente novamente.";
           feedback.classList.add("error");
