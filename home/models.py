@@ -447,6 +447,19 @@ class ConfiguracaoHome(models.Model):
             "à espera (não tocadas), o formulário de novos pedidos fica bloqueado."
         ),
     )
+    pedir_musica_descricao = models.TextField(
+        blank=True,
+        verbose_name="Descrição da página «Pedir música»",
+        help_text=(
+            "Texto exibido abaixo do título em /pedir-musica/ (classe page-hero-lead). "
+            "Deixe vazio para usar o texto predefinido."
+        ),
+    )
+
+    TEXTO_PADRAO_PEDIR_MUSICA = (
+        "Peça a música que quer ouvir e acompanhe a fila ao vivo. Quando a mesa responder "
+        "ao seu pedido, a mensagem aparece em «Resposta da mesa» no seu lugar na fila."
+    )
 
     class Meta:
         verbose_name = "Configuração da página inicial"
@@ -498,6 +511,11 @@ class ConfiguracaoHome(models.Model):
     def get_solo(cls):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
+
+    @property
+    def pedir_musica_lead_exibir(self):
+        texto = (self.pedir_musica_descricao or "").strip()
+        return texto or self.TEXTO_PADRAO_PEDIR_MUSICA
 
     @property
     def instagram_permalink(self):
