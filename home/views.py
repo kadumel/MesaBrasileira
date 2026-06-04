@@ -9,7 +9,12 @@ from django.views.decorators.http import require_GET, require_POST
 
 from .constants import INSTAGRAM_URL
 from .cart import cart_count
-from .forms import AdicionarCarrinhoForm, MarcarPedidoTocadoForm, PedidoMusicaForm
+from .forms import (
+    AdicionarCarrinhoForm,
+    MarcarPedidoTocadoForm,
+    PedidoMusicaForm,
+    RejeitarPedidoMusicaForm,
+)
 from .models import (
     ConfiguracaoHome,
     EventoDestaque,
@@ -40,8 +45,10 @@ def _pedido_fila_json(pedido: PedidoMusica) -> dict:
         "observacao_equipe": pedido.observacao_equipe,
         "marcado_por_exibir": pedido.marcado_por_exibir,
         "tocado": pedido.tocado,
+        "rejeitado": pedido.rejeitado,
         "criado_em": pedido.criado_em.isoformat(),
         "tocado_em": pedido.tocado_em.isoformat() if pedido.tocado_em else None,
+        "rejeitado_em": pedido.rejeitado_em.isoformat() if pedido.rejeitado_em else None,
         "atualizado_em": pedido.atualizado_em.isoformat(),
     }
 
@@ -49,7 +56,7 @@ def _pedido_fila_json(pedido: PedidoMusica) -> dict:
 def _contagem_em_fila(evento_samba):
     if not evento_samba:
         return 0
-    return evento_samba.pedidos.filter(tocado=False).count()
+    return evento_samba.pedidos.filter(tocado=False, rejeitado=False).count()
 
 
 def _fila_limite_context(evento_samba):
@@ -254,6 +261,13 @@ def marcar_pedido_tocado(request, pk):
     if not user_pode_marcar(request.user):
         raise PermissionDenied
     pedido = get_object_or_404(PedidoMusica, pk=pk)
+    if not pedido.em_fila:
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse(
+                {"ok": False, "error": "Este pedido já foi tratado."},
+                status=400,
+            )
+        return HttpResponseRedirect(reverse("home:pedir_musica"))
     form = MarcarPedidoTocadoForm(request.POST)
     if not form.is_valid():
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
@@ -263,6 +277,47 @@ def marcar_pedido_tocado(request, pk):
         form.cleaned_data.get("observacao_equipe", ""),
         user=request.user,
     )
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        pedido.refresh_from_db()
+        return JsonResponse(
+            {
+                "ok": True,
+                "pedido": _pedido_fila_json(pedido),
+            }
+        )
+    return HttpResponseRedirect(reverse("home:pedir_musica"))
+
+
+@require_POST
+@login_required
+def marcar_pedido_rejeitado(request, pk):
+    if not user_pode_marcar(request.user):
+        raise PermissionDenied
+    pedido = get_object_or_404(PedidoMusica, pk=pk)
+    if not pedido.em_fila:
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse(
+                {"ok": False, "error": "Este pedido já foi tratado."},
+                status=400,
+            )
+        return HttpResponseRedirect(reverse("home:pedir_musica"))
+    form = RejeitarPedidoMusicaForm(request.POST)
+    if not form.is_valid():
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"ok": False, "errors": form.errors}, status=400)
+        return HttpResponseRedirect(reverse("home:pedir_musica"))
+    try:
+        pedido.marcar_rejeitado(
+            form.cleaned_data["observacao_equipe"],
+            user=request.user,
+        )
+    except ValueError as exc:
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse(
+                {"ok": False, "errors": {"observacao_equipe": [str(exc)]}},
+                status=400,
+            )
+        return HttpResponseRedirect(reverse("home:pedir_musica"))
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         pedido.refresh_from_db()
         return JsonResponse(

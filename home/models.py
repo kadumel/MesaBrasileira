@@ -524,11 +524,21 @@ class PedidoMusica(models.Model):
         help_text="Mensagem visível na fila para quem pediu (ex.: já tocamos antes).",
     )
     tocado = models.BooleanField(default=False, verbose_name="Já tocámos")
+    rejeitado = models.BooleanField(
+        default=False,
+        verbose_name="Rejeitado",
+        help_text="Pedido recusado pela mesa (não entra na fila ativa).",
+    )
     tocado_em = models.DateTimeField(
         null=True,
         blank=True,
         verbose_name="Tocada em",
         help_text="Data/hora em que a música foi marcada como tocada (ordem na fila).",
+    )
+    rejeitado_em = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Rejeitado em",
     )
     atualizado_em = models.DateTimeField(
         auto_now=True,
@@ -556,14 +566,22 @@ class PedidoMusica(models.Model):
     def ordenar_para_fila(cls, queryset=None):
         """
         Em fila no topo, por id crescente (ordem do pedido).
-        Tocadas abaixo, por atualizado_em decrescente (a mais recente primeiro).
+        Tocadas e rejeitadas juntas abaixo, por atualizado_em decrescente
+        (mais recente primeiro), sem separar por tipo.
         """
+        from django.db.models import Q
         from itertools import chain
 
         qs = queryset if queryset is not None else cls.objects.all()
-        em_fila = qs.filter(tocado=False).order_by("id")
-        tocadas = qs.filter(tocado=True).order_by("-atualizado_em", "-id")
-        return list(chain(em_fila, tocadas))
+        em_fila = qs.filter(tocado=False, rejeitado=False).order_by("id")
+        tratados = qs.filter(Q(tocado=True) | Q(rejeitado=True)).order_by(
+            "-atualizado_em", "-id"
+        )
+        return list(chain(em_fila, tratados))
+
+    @property
+    def em_fila(self):
+        return not self.tocado and not self.rejeitado
 
     @property
     def marcado_por_exibir(self):
@@ -574,6 +592,8 @@ class PedidoMusica(models.Model):
         return nome or user.get_username()
 
     def marcar_tocado(self, observacao_equipe=None, user=None):
+        if not self.em_fila:
+            return
         self.tocado = True
         self.tocado_em = timezone.now()
         update_fields = ["tocado", "tocado_em", "marcado_por", "atualizado_em"]
@@ -582,6 +602,26 @@ class PedidoMusica(models.Model):
         if observacao_equipe is not None:
             self.observacao_equipe = (observacao_equipe or "").strip()[:300]
             update_fields.append("observacao_equipe")
+        self.save(update_fields=update_fields)
+
+    def marcar_rejeitado(self, observacao_equipe, user=None):
+        if not self.em_fila:
+            return
+        obs = (observacao_equipe or "").strip()
+        if not obs:
+            raise ValueError("A resposta da mesa é obrigatória ao rejeitar um pedido.")
+        self.rejeitado = True
+        self.rejeitado_em = timezone.now()
+        self.observacao_equipe = obs[:300]
+        update_fields = [
+            "rejeitado",
+            "rejeitado_em",
+            "observacao_equipe",
+            "marcado_por",
+            "atualizado_em",
+        ]
+        if user is not None and getattr(user, "is_authenticated", False):
+            self.marcado_por = user
         self.save(update_fields=update_fields)
 
 

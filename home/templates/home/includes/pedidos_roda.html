@@ -1,7 +1,7 @@
 {% if pode_marcar %}
 <p class="equipe-fila-hint">
-  Sessão iniciada como <strong>{{ user.get_username }}</strong> — marque como tocada e use a observação para responder
-  a quem pediu (ex.: «já tocamos esta música antes»). A mensagem aparece na fila para todos verem.
+  Sessão iniciada como <strong>{{ user.get_username }}</strong> — marque como <strong>tocada</strong> (resposta opcional)
+  ou <strong>rejeite</strong> o pedido (motivo obrigatório, visível na fila para todos).
 </p>
 {% endif %}
 
@@ -83,6 +83,7 @@
     {% if evento_samba %}data-evento-id="{{ evento_samba.pk }}"{% endif %}
     data-pode-marcar="{% if pode_marcar %}1{% else %}0{% endif %}"
     data-marcar-url-sample="{% url 'home:marcar_pedido_tocado' 0 %}"
+    data-rejeitar-url-sample="{% url 'home:marcar_pedido_rejeitado' 0 %}"
   >
     <div id="queue-csrf-source" class="visually-hidden" aria-hidden="true">{% csrf_token %}</div>
     <div class="queue-header">
@@ -99,15 +100,18 @@
     <ul class="queue-list" id="queue-list">
       {% for pedido in pedidos %}
       <li
-        class="queue-item {% if pedido.tocado %}queue-item--done{% endif %}{% if pode_marcar and not pedido.tocado %} queue-item--equipe{% endif %}"
+        class="queue-item{% if pedido.tocado %} queue-item--done{% elif pedido.rejeitado %} queue-item--rejected{% endif %}{% if pode_marcar and pedido.em_fila %} queue-item--equipe{% endif %}"
         data-id="{{ pedido.pk }}"
         data-tocado="{% if pedido.tocado %}1{% else %}0{% endif %}"
+        data-rejeitado="{% if pedido.rejeitado %}1{% else %}0{% endif %}"
       >
         <div class="queue-item-body">
           <div class="queue-item-grid">
             <div class="queue-col-status">
               {% if pedido.tocado %}
               <span class="badge badge-queue badge-queue--tocada">Já tocada</span>
+              {% elif pedido.rejeitado %}
+              <span class="badge badge-queue badge-queue--rejeitada">Rejeitada</span>
               {% else %}
               <span class="badge badge-queue badge-queue--fila">Em fila</span>
               {% endif %}
@@ -136,9 +140,9 @@
             {{ pedido.observacao_equipe }}
           </p>
           {% endif %}
-          {% if pedido.tocado and pedido.marcado_por_exibir %}
+          {% if pedido.marcado_por_exibir and not pedido.em_fila %}
           <p class="queue-item-note queue-item-note--marcador">
-            <span class="queue-item-note-label">Marcado por:</span>
+            <span class="queue-item-note-label">Tratado por:</span>
             {{ pedido.marcado_por_exibir }}
           </p>
           {% endif %}
@@ -146,26 +150,41 @@
         <div class="queue-item-action">
           {% if pedido.tocado %}
           <span class="queue-status ok" aria-label="Já tocada">✓</span>
+          {% elif pedido.rejeitado %}
+          <span class="queue-status rejected" aria-label="Pedido rejeitado">✕</span>
           {% elif pode_marcar %}
-          <form
-            method="post"
-            action="{% url 'home:marcar_pedido_tocado' pedido.pk %}"
-            class="marcar-tocado-form"
-          >
-            {% csrf_token %}
-            <label class="visually-hidden" for="obs-{{ pedido.pk }}">Observação (opcional)</label>
+          <div class="queue-equipe-actions">
+            <label class="visually-hidden" for="resp-{{ pedido.pk }}">Resposta visível na fila</label>
             <input
               type="text"
-              id="obs-{{ pedido.pk }}"
-              name="observacao_equipe"
-              class="form-input form-input--sm"
-              placeholder="Resposta visível na fila (opcional)"
+              id="resp-{{ pedido.pk }}"
+              class="form-input form-input--sm queue-resposta-input"
+              placeholder="Resposta visível na fila (obrigatória ao rejeitar)"
               maxlength="300"
             >
-            <button type="submit" class="btn btn-xs btn-primary" title="Marcar como tocada">
-              Tocada
-            </button>
-          </form>
+            <div class="queue-equipe-buttons">
+              <form
+                method="post"
+                action="{% url 'home:marcar_pedido_tocado' pedido.pk %}"
+                class="marcar-tocado-form"
+              >
+                {% csrf_token %}
+                <button type="submit" class="queue-btn queue-btn--tocada" title="Marcar como tocada">
+                  Tocada
+                </button>
+              </form>
+              <form
+                method="post"
+                action="{% url 'home:marcar_pedido_rejeitado' pedido.pk %}"
+                class="rejeitar-pedido-form"
+              >
+                {% csrf_token %}
+                <button type="submit" class="queue-btn queue-btn--rejeitada" title="Rejeitar pedido">
+                  Rejeitada
+                </button>
+              </form>
+            </div>
+          </div>
           {% else %}
           <span class="queue-status wait" aria-label="Na fila">♪</span>
           {% endif %}

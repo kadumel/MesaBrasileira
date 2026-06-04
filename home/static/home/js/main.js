@@ -109,6 +109,19 @@
     return p.tocado === true || p.tocado === 1 || p.tocado === "1" || p.tocado === "true";
   }
 
+  function isRejeitado(p) {
+    return (
+      p.rejeitado === true ||
+      p.rejeitado === 1 ||
+      p.rejeitado === "1" ||
+      p.rejeitado === "true"
+    );
+  }
+
+  function emFila(p) {
+    return !isTocado(p) && !isRejeitado(p);
+  }
+
   function fetchFila(url) {
     const sep = url.includes("?") ? "&" : "?";
     return fetch(`${url}${sep}_=${Date.now()}`, {
@@ -130,6 +143,14 @@
     return `/pedido-musica/${id}/tocar/`;
   }
 
+  function rejeitarPedidoUrl(id) {
+    const sample = queuePanel && queuePanel.dataset.rejeitarUrlSample;
+    if (sample) {
+      return sample.replace("/0/", `/${id}/`);
+    }
+    return `/pedido-musica/${id}/rejeitar/`;
+  }
+
   function renderQueueItemNotes(p) {
     let html = "";
     if (p.mensagem) {
@@ -138,8 +159,8 @@
     if (p.observacao_equipe) {
       html += `<p class="queue-item-note queue-item-note--resposta" role="status"><span class="queue-item-note-label">Resposta da mesa:</span> ${escapeHtml(p.observacao_equipe)}</p>`;
     }
-    if (isTocado(p) && p.marcado_por_exibir) {
-      html += `<p class="queue-item-note queue-item-note--marcador"><span class="queue-item-note-label">Marcado por:</span> ${escapeHtml(p.marcado_por_exibir)}</p>`;
+    if (!emFila(p) && p.marcado_por_exibir) {
+      html += `<p class="queue-item-note queue-item-note--marcador"><span class="queue-item-note-label">Tratado por:</span> ${escapeHtml(p.marcado_por_exibir)}</p>`;
     }
     return html;
   }
@@ -147,6 +168,9 @@
   function renderStatusBadge(p) {
     if (isTocado(p)) {
       return '<span class="badge badge-queue badge-queue--tocada">Já tocada</span>';
+    }
+    if (isRejeitado(p)) {
+      return '<span class="badge badge-queue badge-queue--rejeitada">Rejeitada</span>';
     }
     return '<span class="badge badge-queue badge-queue--fila">Em fila</span>';
   }
@@ -173,39 +197,121 @@
       ${renderQueueItemNotes(p)}`;
   }
 
-  function renderMarcarFormHtml(p) {
+  function respostaInputDoPedido(formEl) {
+    const wrap = formEl && formEl.closest(".queue-equipe-actions");
+    return wrap ? wrap.querySelector(".queue-resposta-input") : null;
+  }
+
+  function renderEquipeActionsHtml(p) {
     const token = getCsrfToken();
-    return `<form method="post" action="${marcarPedidoUrl(p.id)}" class="marcar-tocado-form">
-      <input type="hidden" name="csrfmiddlewaretoken" value="${escapeHtml(token)}">
-      <label class="visually-hidden" for="obs-js-${p.id}">Observação (opcional)</label>
-      <input type="text" id="obs-js-${p.id}" name="observacao_equipe" class="form-input form-input--sm" placeholder="Resposta visível na fila (opcional)" maxlength="300">
-      <button type="submit" class="btn btn-xs btn-primary" title="Marcar como tocada">Tocada</button>
-    </form>`;
+    return `<div class="queue-equipe-actions">
+      <label class="visually-hidden" for="resp-js-${p.id}">Resposta visível na fila</label>
+      <input type="text" id="resp-js-${p.id}" class="form-input form-input--sm queue-resposta-input" placeholder="Resposta visível na fila (obrigatória ao rejeitar)" maxlength="300">
+      <div class="queue-equipe-buttons">
+        <form method="post" action="${marcarPedidoUrl(p.id)}" class="marcar-tocado-form">
+          <input type="hidden" name="csrfmiddlewaretoken" value="${escapeHtml(token)}">
+          <button type="submit" class="queue-btn queue-btn--tocada" title="Marcar como tocada">Tocada</button>
+        </form>
+        <form method="post" action="${rejeitarPedidoUrl(p.id)}" class="rejeitar-pedido-form">
+          <input type="hidden" name="csrfmiddlewaretoken" value="${escapeHtml(token)}">
+          <button type="submit" class="queue-btn queue-btn--rejeitada" title="Rejeitar pedido">Rejeitada</button>
+        </form>
+      </div>
+    </div>`;
   }
 
   function renderQueueActionHtml(p, equipe) {
-    const done = isTocado(p);
-    if (done) {
+    if (isTocado(p)) {
       return '<span class="queue-status ok" aria-label="Já tocada">✓</span>';
     }
+    if (isRejeitado(p)) {
+      return '<span class="queue-status rejected" aria-label="Pedido rejeitado">✕</span>';
+    }
     if (equipe) {
-      return renderMarcarFormHtml(p);
+      return renderEquipeActionsHtml(p);
     }
     return '<span class="queue-status wait" aria-label="Na fila">♪</span>';
   }
 
   function renderQueueItemHtml(p, equipe) {
-    const done = isTocado(p);
     const classes = ["queue-item"];
-    if (done) {
+    if (isTocado(p)) {
       classes.push("queue-item--done");
+    } else if (isRejeitado(p)) {
+      classes.push("queue-item--rejected");
     } else if (equipe) {
       classes.push("queue-item--equipe");
     }
-    return `<li class="${classes.join(" ")}" data-id="${escapeHtml(String(p.id))}" data-tocado="${done ? "1" : "0"}">
+    return `<li class="${classes.join(" ")}" data-id="${escapeHtml(String(p.id))}" data-tocado="${isTocado(p) ? "1" : "0"}" data-rejeitado="${isRejeitado(p) ? "1" : "0"}">
       <div class="queue-item-body">${renderQueueBodyHtml(p)}</div>
       <div class="queue-item-action">${renderQueueActionHtml(p, equipe)}</div>
     </li>`;
+  }
+
+  function formularioFilaEmEdicao(target) {
+    return (
+      target &&
+      target.closest(
+        ".marcar-tocado-form, .rejeitar-pedido-form, .queue-equipe-actions .queue-resposta-input"
+      )
+    );
+  }
+
+  function sincronizarRespostaNoForm(formEl) {
+    const input = respostaInputDoPedido(formEl);
+    if (!input) {
+      return;
+    }
+    let hidden = formEl.querySelector('input[name="observacao_equipe"]');
+    if (!hidden) {
+      hidden = document.createElement("input");
+      hidden.type = "hidden";
+      hidden.name = "observacao_equipe";
+      formEl.appendChild(hidden);
+    }
+    hidden.value = input.value;
+  }
+
+  async function enviarFormularioFila(formEl) {
+    sincronizarRespostaNoForm(formEl);
+    const formData = new FormData(formEl);
+    const res = await fetch(formEl.action, {
+      method: "POST",
+      body: formData,
+      credentials: "same-origin",
+      cache: "no-store",
+      headers: { "X-Requested-With": "XMLHttpRequest" },
+    });
+    const contentType = res.headers.get("Content-Type") || "";
+    if (!res.ok) {
+      if (contentType.includes("application/json")) {
+        const data = await res.json();
+        const msg =
+          data.errors?.observacao_equipe?.[0] ||
+          data.error ||
+          "Não foi possível concluir a ação.";
+        const input = respostaInputDoPedido(formEl);
+        if (input) {
+          input.setCustomValidity(msg);
+          input.reportValidity();
+        } else {
+          window.alert(msg);
+        }
+        return;
+      }
+      formEl.submit();
+      return;
+    }
+    if (contentType.includes("application/json")) {
+      const data = await res.json();
+      if (data.ok) {
+        refreshPaused = false;
+        await refreshQueue();
+        return;
+      }
+    }
+    refreshPaused = false;
+    await refreshQueue();
   }
 
   function atualizarFila(pedidos) {
@@ -292,7 +398,7 @@
     queueList.addEventListener(
       "focusin",
       (e) => {
-        if (e.target.closest(".marcar-tocado-form input, .marcar-tocado-form textarea")) {
+        if (e.target.closest(".queue-resposta-input")) {
           refreshPaused = true;
         }
       },
@@ -301,7 +407,7 @@
     queueList.addEventListener(
       "focusout",
       (e) => {
-        if (e.target.closest(".marcar-tocado-form")) {
+        if (formularioFilaEmEdicao(e.target)) {
           window.setTimeout(() => {
             refreshPaused = false;
           }, 200);
@@ -311,35 +417,28 @@
     );
 
     queueList.addEventListener("submit", async (e) => {
-      const formEl = e.target.closest(".marcar-tocado-form");
+      const formEl = e.target.closest(".marcar-tocado-form, .rejeitar-pedido-form");
       if (!formEl) return;
       e.preventDefault();
-      const li = formEl.closest(".queue-item");
-      const formData = new FormData(formEl);
-      try {
-        const res = await fetch(formEl.action, {
-          method: "POST",
-          body: formData,
-          credentials: "same-origin",
-          cache: "no-store",
-          headers: { "X-Requested-With": "XMLHttpRequest" },
-        });
-        const contentType = res.headers.get("Content-Type") || "";
-        if (!res.ok) {
-          formEl.submit();
+      const obs = respostaInputDoPedido(formEl);
+      if (formEl.classList.contains("rejeitar-pedido-form")) {
+        if (!obs || !obs.value.trim()) {
+          if (obs) {
+            obs.setCustomValidity("Indique o motivo da rejeição — a resposta é obrigatória.");
+            obs.reportValidity();
+          }
           return;
         }
-        if (contentType.includes("application/json")) {
-          const data = await res.json();
-          if (data.ok && data.pedido) {
-            refreshPaused = false;
-            await refreshQueue();
-            return;
-          }
+        if (obs) {
+          obs.setCustomValidity("");
         }
-        refreshPaused = false;
-        await refreshQueue();
+      } else if (obs) {
+        obs.setCustomValidity("");
+      }
+      try {
+        await enviarFormularioFila(formEl);
       } catch (_) {
+        sincronizarRespostaNoForm(formEl);
         formEl.submit();
       }
     });

@@ -60,6 +60,11 @@ urlpatterns = [
         views.marcar_pedido_tocado,
         name="marcar_pedido_tocado",
     ),
+    path(
+        "pedido-musica/<int:pk>/rejeitar/",
+        views.marcar_pedido_rejeitado,
+        name="marcar_pedido_rejeitado",
+    ),
     path("api/fila/<int:evento_id>/", views.fila_pedidos_json, name="fila_pedidos"),
     path(
         "accounts/login/",

@@ -196,3 +196,27 @@ class MarcarPedidoTocadoForm(forms.Form):
             }
         ),
     )
+
+
+class RejeitarPedidoMusicaForm(forms.Form):
+    observacao_equipe = forms.CharField(
+        required=True,
+        max_length=300,
+        label="Motivo da rejeição",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-input form-input--sm",
+                "placeholder": "Motivo visível na fila (obrigatório)",
+                "maxlength": "300",
+                "required": "required",
+            }
+        ),
+    )
+
+    def clean_observacao_equipe(self):
+        valor = (self.cleaned_data.get("observacao_equipe") or "").strip()
+        if not valor:
+            raise forms.ValidationError(
+                "Indique o motivo da rejeição — a resposta é obrigatória."
+            )
+        return valor[:300]

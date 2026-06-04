@@ -733,17 +733,7 @@ a:hover {
 }
 
 .queue-table-head {
-  display: grid;
-  grid-template-columns: 5.25rem 1fr 1fr minmax(5rem, 0.9fr);
-  gap: 0.35rem 0.65rem;
-  padding: 0 0 0.65rem;
-  margin-bottom: 0.25rem;
-  border-bottom: 2px solid var(--border);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--brown-muted);
+  display: none;
 }
 
 .queue-th--status {
@@ -878,6 +868,22 @@ a:hover {
 
 .queue-item--equipe {
   flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.6rem;
+}
+
+.queue-item--equipe .queue-item-body {
+  flex: 1 1 100%;
+  width: 100%;
+  min-width: 0;
+}
+
+.queue-item--equipe .queue-item-action {
+  flex: 1 1 100%;
+  width: 100%;
+  max-width: 100%;
+  margin-left: 0;
+  padding-right: 0;
 }
 
 .queue-item-body {
@@ -886,10 +892,15 @@ a:hover {
 }
 
 .queue-item-grid {
-  display: grid;
-  grid-template-columns: 5.25rem 1fr 1fr minmax(5rem, 0.9fr);
-  gap: 0.35rem 0.65rem;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: flex-start;
+}
+
+.queue-col-status {
+  margin-bottom: 0.1rem;
+  padding-top: 0.1rem;
 }
 
 .queue-col-musica,
@@ -900,6 +911,7 @@ a:hover {
   align-items: baseline;
   gap: 0.25rem 0.4rem;
   min-width: 0;
+  width: 100%;
 }
 
 .queue-field-label {
@@ -929,10 +941,6 @@ a:hover {
   font-weight: 500;
 }
 
-.queue-col-status {
-  padding-top: 0.1rem;
-}
-
 .badge-queue {
   position: static;
   display: inline-block;
@@ -952,6 +960,12 @@ a:hover {
 .badge-queue--tocada {
   background: var(--green);
   color: var(--cream-light);
+}
+
+.badge-queue--rejeitada {
+  background: rgba(200, 90, 26, 0.2);
+  color: var(--accent-hot);
+  border: 1px solid var(--accent-hot);
 }
 
 .queue-item-note {
@@ -983,6 +997,15 @@ a:hover {
   color: var(--green);
 }
 
+.queue-item--rejected .queue-item-note--resposta {
+  background: rgba(200, 90, 26, 0.1);
+  border-left-color: var(--accent-hot);
+}
+
+.queue-item--rejected .queue-item-note--resposta .queue-item-note-label {
+  color: var(--accent-hot);
+}
+
 .queue-item-note--marcador {
   font-size: 0.8rem;
   color: var(--text-muted);
@@ -996,15 +1019,7 @@ a:hover {
   flex-shrink: 0;
   display: flex;
   align-items: flex-start;
-}
-
-.marcar-tocado-form {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.4rem;
-  flex-shrink: 0;
-  min-width: 9.5rem;
+  justify-content: flex-start;
 }
 
 .form-input--sm {
@@ -1013,11 +1028,111 @@ a:hover {
   border-radius: 8px;
 }
 
-.marcar-tocado-form .btn-xs {
+.queue-equipe-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+  max-width: 100%;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.queue-equipe-actions .queue-resposta-input {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.4rem 0.45rem;
+  font-size: 0.75rem;
+}
+
+.queue-equipe-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
   width: 100%;
 }
 
-.queue-item--done {
+.marcar-tocado-form,
+.rejeitar-pedido-form {
+  display: block;
+  margin: 0;
+  padding: 0;
+  width: auto;
+}
+
+.marcar-tocado-form input[type="hidden"],
+.rejeitar-pedido-form input[type="hidden"] {
+  display: none;
+}
+
+.queue-btn {
+  display: inline-block;
+  margin: 0;
+  padding: 0.15rem 0.38rem;
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  max-width: 100%;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background 0.15s ease, filter 0.15s ease;
+}
+
+.queue-btn:hover {
+  transform: none;
+  filter: brightness(0.95);
+}
+
+.queue-btn--tocada {
+  background: var(--brown);
+  color: var(--cream-light);
+  border-color: var(--brown);
+}
+
+.queue-btn--tocada:hover {
+  background: var(--brown-deep);
+  color: var(--cream-light);
+}
+
+.queue-btn--rejeitada {
+  padding: 0.15rem 0.42rem;
+  font-size: 0.64rem;
+  background: #c0392b;
+  color: #fff;
+  border-color: #a93226;
+}
+
+.queue-btn--rejeitada:hover {
+  background: #a93226;
+  color: #fff;
+}
+
+.btn-danger {
+  background: var(--accent-hot);
+  color: var(--cream-light);
+  border: 1px solid var(--accent-hot);
+}
+
+.btn-danger:hover {
+  filter: brightness(0.92);
+}
+
+.queue-status.rejected {
+  color: var(--accent-hot);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.queue-item--done,
+.queue-item--rejected {
   opacity: 0.55;
 }
 
@@ -2193,15 +2308,6 @@ a.patrocinador-card:hover {
 
   .requests-layout {
     grid-template-columns: 1fr;
-  }
-
-  .queue-table-head {
-    display: none;
-  }
-
-  .queue-item-grid {
-    grid-template-columns: 1fr;
-    gap: 0.45rem;
   }
 
   .nav-toggle {
