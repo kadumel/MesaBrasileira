@@ -133,7 +133,7 @@
   function renderQueueItemNotes(p) {
     let html = "";
     if (p.mensagem) {
-      html += `<p class="queue-item-note queue-item-note--public"><span class="queue-item-note-label">Pedido:</span> ${escapeHtml(p.mensagem)}</p>`;
+      html += `<p class="queue-item-note queue-item-note--public"><span class="queue-item-note-label">Mensagem:</span> ${escapeHtml(p.mensagem)}</p>`;
     }
     if (p.observacao_equipe) {
       html += `<p class="queue-item-note queue-item-note--resposta" role="status"><span class="queue-item-note-label">Resposta da mesa:</span> ${escapeHtml(p.observacao_equipe)}</p>`;
@@ -152,12 +152,23 @@
   }
 
   function renderQueueBodyHtml(p) {
-    const artista = p.artista ? `<span>${escapeHtml(p.artista)}</span>` : "";
-    return `<div class="queue-item-top">${renderStatusBadge(p)}</div>
-      <div class="queue-item-main">
-        <strong>${escapeHtml(p.musica)}</strong>
-        ${artista}
-        <em>— ${escapeHtml(p.pedido_por)}</em>
+    const artistaVal = p.artista
+      ? escapeHtml(p.artista)
+      : '<span class="queue-td-empty">—</span>';
+    return `<div class="queue-item-grid">
+        <div class="queue-col-status">${renderStatusBadge(p)}</div>
+        <div class="queue-col-musica">
+          <span class="queue-field-label">Música:</span>
+          <span class="queue-field-value">${escapeHtml(p.musica)}</span>
+        </div>
+        <div class="queue-col-artista">
+          <span class="queue-field-label">Artista:</span>
+          <span class="queue-field-value">${artistaVal}</span>
+        </div>
+        <div class="queue-col-por">
+          <span class="queue-field-label">Pedido por:</span>
+          <span class="queue-field-value">${escapeHtml(p.pedido_por)}</span>
+        </div>
       </div>
       ${renderQueueItemNotes(p)}`;
   }
@@ -172,129 +183,45 @@
     </form>`;
   }
 
-  function ensureActionContainer(li) {
-    let action = li.querySelector(".queue-item-action");
-    if (!action) {
-      action = document.createElement("div");
-      action.className = "queue-item-action";
-      li.appendChild(action);
-    }
-    return action;
-  }
-
-  function itemEmEdicao(li) {
-    return (
-      li &&
-      document.activeElement &&
-      li.contains(document.activeElement) &&
-      document.activeElement.closest(".marcar-tocado-form")
-    );
-  }
-
-  function atualizarCorpoPedido(li, p) {
-    let body = li.querySelector(".queue-item-body");
-    if (!body) {
-      body = document.createElement("div");
-      body.className = "queue-item-body";
-      li.prepend(body);
-    }
-    body.innerHTML = renderQueueBodyHtml(p);
-  }
-
-  function atualizarAcaoPedido(li, p, equipe) {
+  function renderQueueActionHtml(p, equipe) {
     const done = isTocado(p);
-    const action = ensureActionContainer(li);
-
     if (done) {
-      action.innerHTML = '<span class="queue-status ok" aria-label="Já tocada">✓</span>';
-      return;
+      return '<span class="queue-status ok" aria-label="Já tocada">✓</span>';
     }
-
     if (equipe) {
-      if (!action.querySelector(".marcar-tocado-form")) {
-        action.innerHTML = renderMarcarFormHtml(p);
-      }
-      return;
+      return renderMarcarFormHtml(p);
     }
-
-    if (!action.querySelector(".queue-status.wait")) {
-      action.innerHTML = '<span class="queue-status wait" aria-label="Na fila">♪</span>';
-    }
+    return '<span class="queue-status wait" aria-label="Na fila">♪</span>';
   }
 
-  function aplicarEstadoPedido(li, p, equipe) {
+  function renderQueueItemHtml(p, equipe) {
     const done = isTocado(p);
-    li.dataset.tocado = done ? "1" : "0";
-    li.classList.toggle("queue-item--done", done);
-    li.classList.toggle("queue-item--equipe", equipe && !done);
-    atualizarCorpoPedido(li, p);
-    if (!itemEmEdicao(li)) {
-      atualizarAcaoPedido(li, p, equipe);
+    const classes = ["queue-item"];
+    if (done) {
+      classes.push("queue-item--done");
+    } else if (equipe) {
+      classes.push("queue-item--equipe");
     }
-  }
-
-  function buildQueueItemElement(p, equipe) {
-    const li = document.createElement("li");
-    li.className = "queue-item";
-    li.dataset.id = String(p.id);
-    aplicarEstadoPedido(li, p, equipe);
-    return li;
-  }
-
-  function ordenarPedidos(pedidos) {
-    return [...pedidos].sort((a, b) => {
-      const aTocado = isTocado(a) ? 1 : 0;
-      const bTocado = isTocado(b) ? 1 : 0;
-      if (aTocado !== bTocado) {
-        return aTocado - bTocado;
-      }
-      return Number(a.id) - Number(b.id);
-    });
+    return `<li class="${classes.join(" ")}" data-id="${escapeHtml(String(p.id))}" data-tocado="${done ? "1" : "0"}">
+      <div class="queue-item-body">${renderQueueBodyHtml(p)}</div>
+      <div class="queue-item-action">${renderQueueActionHtml(p, equipe)}</div>
+    </li>`;
   }
 
   function atualizarFila(pedidos) {
     if (!queueList || !Array.isArray(pedidos)) return;
 
-    pedidos = ordenarPedidos(pedidos);
     const equipe = equipeAtiva();
-    const empty = queueList.querySelector(".queue-empty");
-    if (empty) {
-      empty.remove();
-    }
+    const scrollTop = queueList.scrollTop;
 
     if (!pedidos.length) {
-      if (!queueList.querySelector(".queue-item")) {
-        queueList.innerHTML =
-          '<li class="queue-empty" id="queue-empty">A fila está vazia — seja o primeiro!</li>';
-      }
+      queueList.innerHTML =
+        '<li class="queue-empty" id="queue-empty">A fila está vazia — seja o primeiro!</li>';
       return;
     }
 
-    const ids = new Set(pedidos.map((p) => String(p.id)));
-
-    pedidos.forEach((p) => {
-      const id = String(p.id);
-      let li = queueList.querySelector(`.queue-item[data-id="${id}"]`);
-      if (!li) {
-        li = buildQueueItemElement(p, equipe);
-        queueList.appendChild(li);
-        return;
-      }
-      aplicarEstadoPedido(li, p, equipe);
-    });
-
-    queueList.querySelectorAll(".queue-item").forEach((li) => {
-      if (!ids.has(li.dataset.id)) {
-        li.remove();
-      }
-    });
-
-    pedidos.forEach((p) => {
-      const li = queueList.querySelector(`.queue-item[data-id="${p.id}"]`);
-      if (li) {
-        queueList.appendChild(li);
-      }
-    });
+    queueList.innerHTML = pedidos.map((p) => renderQueueItemHtml(p, equipe)).join("");
+    queueList.scrollTop = scrollTop;
   }
 
   function aplicarLimiteFila(data) {
@@ -351,6 +278,9 @@
       if (!Array.isArray(data.pedidos)) {
         return;
       }
+      if (queuePanel && data.pode_marcar !== undefined) {
+        queuePanel.dataset.podeMarcar = data.pode_marcar ? "1" : "0";
+      }
       aplicarLimiteFila(data);
       atualizarFila(data.pedidos);
     } catch (_) {
@@ -401,9 +331,9 @@
         }
         if (contentType.includes("application/json")) {
           const data = await res.json();
-          if (data.ok && data.pedido && li) {
+          if (data.ok && data.pedido) {
             refreshPaused = false;
-            aplicarEstadoPedido(li, data.pedido, equipeAtiva());
+            await refreshQueue();
             return;
           }
         }

@@ -29,6 +29,23 @@ def user_pode_marcar(user):
     return user.is_authenticated
 
 
+def _pedido_fila_json(pedido: PedidoMusica) -> dict:
+    """Payload JSON da fila (ordem e refresh automático)."""
+    return {
+        "id": pedido.pk,
+        "musica": pedido.musica,
+        "artista": pedido.artista,
+        "pedido_por": pedido.pedido_por,
+        "mensagem": pedido.mensagem,
+        "observacao_equipe": pedido.observacao_equipe,
+        "marcado_por_exibir": pedido.marcado_por_exibir,
+        "tocado": pedido.tocado,
+        "criado_em": pedido.criado_em.isoformat(),
+        "tocado_em": pedido.tocado_em.isoformat() if pedido.tocado_em else None,
+        "atualizado_em": pedido.atualizado_em.isoformat(),
+    }
+
+
 def _contagem_em_fila(evento_samba):
     if not evento_samba:
         return 0
@@ -56,10 +73,9 @@ def _evento_pedidos_context():
     pedidos = []
     form = None
     if evento_samba:
-        pedidos = (
+        pedidos = PedidoMusica.ordenar_para_fila(
             evento_samba.pedidos.select_related("marcado_por")
-            .order_by("tocado", "id")[:50]
-        )
+        )[:50]
         form = PedidoMusicaForm()
     return {
         "evento_samba": evento_samba,
@@ -222,13 +238,7 @@ def pedido_musica(request):
             return JsonResponse(
                 {
                     "ok": True,
-                    "pedido": {
-                        "id": pedido.pk,
-                        "musica": pedido.musica,
-                        "artista": pedido.artista,
-                        "pedido_por": pedido.pedido_por,
-                        "tocado": pedido.tocado,
-                    },
+                    "pedido": _pedido_fila_json(pedido),
                 }
             )
         return HttpResponseRedirect(reverse("home:pedir_musica"))
@@ -254,19 +264,11 @@ def marcar_pedido_tocado(request, pk):
         user=request.user,
     )
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        pedido.refresh_from_db()
         return JsonResponse(
             {
                 "ok": True,
-                "pedido": {
-                    "id": pedido.pk,
-                    "musica": pedido.musica,
-                    "artista": pedido.artista,
-                    "pedido_por": pedido.pedido_por,
-                    "mensagem": pedido.mensagem,
-                    "observacao_equipe": pedido.observacao_equipe,
-                    "marcado_por_exibir": pedido.marcado_por_exibir,
-                    "tocado": True,
-                },
+                "pedido": _pedido_fila_json(pedido),
             }
         )
     return HttpResponseRedirect(reverse("home:pedir_musica"))
@@ -278,23 +280,10 @@ def fila_pedidos_json(request, evento_id):
     config = ConfiguracaoHome.get_solo()
     limite = config.limite_pedidos_em_fila
     total_em_fila = _contagem_em_fila(evento)
-    pedidos = (
-        evento.pedidos.select_related("marcado_por").order_by("tocado", "id")[:50]
-    )
-    data = [
-        {
-            "id": p.pk,
-            "musica": p.musica,
-            "artista": p.artista,
-            "pedido_por": p.pedido_por,
-            "mensagem": p.mensagem,
-            "observacao_equipe": p.observacao_equipe,
-            "marcado_por_exibir": p.marcado_por_exibir,
-            "tocado": p.tocado,
-            "criado_em": p.criado_em.isoformat(),
-        }
-        for p in pedidos
-    ]
+    pedidos = PedidoMusica.ordenar_para_fila(
+        evento.pedidos.select_related("marcado_por")
+    )[:50]
+    data = [_pedido_fila_json(p) for p in pedidos]
     response = JsonResponse(
         {
             "pedidos": data,

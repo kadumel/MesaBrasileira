@@ -14,8 +14,19 @@ from .cart import (
     update_line,
 )
 from .forms import AdicionarCarrinhoForm, CheckoutEntregaForm, CheckoutPagamentoForm
-from .models import ItemPedido, Pedido, Produto
+from .models import ConfiguracaoHome, ItemPedido, Pedido, Produto
 from .services.pedido_email import enviar_email_confirmacao
+
+
+def _dados_pagamento_loja():
+    config = ConfiguracaoHome.get_solo()
+    mbway = config.mbway_telefone_exibir
+    iban = config.iban_exibir
+    if not mbway:
+        mbway = getattr(settings, "LOJA_MBWAY_TELEFONE", "").strip()
+    if not iban:
+        iban = getattr(settings, "LOJA_IBAN", "").strip()
+    return {"mbway_telefone": mbway, "iban": iban}
 
 
 def _loja_context(request, **extra):
@@ -229,8 +240,7 @@ def checkout_pagamento(request, numero):
         request,
         pedido=pedido,
         form=form,
-        mbway_telefone=getattr(settings, "LOJA_MBWAY_TELEFONE", ""),
-        iban=getattr(settings, "LOJA_IBAN", ""),
+        **_dados_pagamento_loja(),
     )
     return render(request, "home/checkout_pagamento.html", context)
 
@@ -240,7 +250,6 @@ def pedido_confirmado(request, numero):
     context = _loja_context(
         request,
         pedido=pedido,
-        mbway_telefone=getattr(settings, "LOJA_MBWAY_TELEFONE", ""),
-        iban=getattr(settings, "LOJA_IBAN", ""),
+        **_dados_pagamento_loja(),
     )
     return render(request, "home/pedido_confirmado.html", context)

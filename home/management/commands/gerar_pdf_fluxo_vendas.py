@@ -280,8 +280,8 @@ class Command(BaseCommand):
             ["N8N_WEBHOOK_URL", "Railway", "URL do webhook n8n (envio em produção)"],
             ["N8N_WEBHOOK_SECRET", "Opcional", "Header X-Webhook-Secret"],
             ["DEFAULT_FROM_EMAIL", "Railway / .env", "Campo «de» no JSON para o n8n"],
-            ["LOJA_MBWAY_TELEFONE", "Railway / .env", "Instruções na página de pagamento"],
-            ["LOJA_IBAN", "Railway / .env", "IBAN na página de pagamento"],
+            ["loja_mbway_telefone / loja_iban", "Admin → Config. página inicial → Vendas", "MB Way e IBAN no checkout"],
+            ["LOJA_MBWAY_* / LOJA_IBAN", ".env (opcional)", "Fallback se os campos no admin estiverem vazios"],
             ["EMAIL_HOST_*", "Apenas local", "SMTP Gmail (desenvolvimento)"],
         ]
         story.append(Paragraph("5.2 Variáveis de ambiente", h3))

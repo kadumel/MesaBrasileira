@@ -728,6 +728,28 @@ a:hover {
   animation: pulse 2s infinite;
 }
 
+.queue-table {
+  min-width: 0;
+}
+
+.queue-table-head {
+  display: grid;
+  grid-template-columns: 5.25rem 1fr 1fr minmax(5rem, 0.9fr);
+  gap: 0.35rem 0.65rem;
+  padding: 0 0 0.65rem;
+  margin-bottom: 0.25rem;
+  border-bottom: 2px solid var(--border);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--brown-muted);
+}
+
+.queue-th--status {
+  text-align: left;
+}
+
 .queue-list {
   list-style: none;
   margin: 0;
@@ -863,8 +885,52 @@ a:hover {
   min-width: 0;
 }
 
-.queue-item-top {
-  margin-bottom: 0.35rem;
+.queue-item-grid {
+  display: grid;
+  grid-template-columns: 5.25rem 1fr 1fr minmax(5rem, 0.9fr);
+  gap: 0.35rem 0.65rem;
+  align-items: start;
+}
+
+.queue-col-musica,
+.queue-col-artista,
+.queue-col-por {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.4rem;
+  min-width: 0;
+}
+
+.queue-field-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--brown-muted);
+  flex-shrink: 0;
+}
+
+.queue-field-value {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--brown);
+  word-break: break-word;
+}
+
+.queue-td-empty {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.queue-item--done .queue-field-value {
+  text-decoration: line-through;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.queue-col-status {
+  padding-top: 0.1rem;
 }
 
 .badge-queue {
@@ -889,7 +955,6 @@ a:hover {
 }
 
 .queue-item-note {
-  margin: 0.35rem 0 0;
   font-size: 0.82rem;
   line-height: 1.35;
   color: var(--text-muted);
@@ -956,26 +1021,10 @@ a:hover {
   opacity: 0.55;
 }
 
-.queue-item--done .queue-item-main strong {
-  text-decoration: line-through;
-  color: var(--text-muted);
-}
-
-.queue-item-main {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.queue-item-main span {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-.queue-item-main em {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  font-style: normal;
+.queue-item-body .queue-item-note {
+  margin-top: 0.5rem;
+  padding-top: 0.35rem;
+  border-top: 1px dashed var(--border);
 }
 
 .queue-status.ok {
@@ -2144,6 +2193,15 @@ a.patrocinador-card:hover {
 
   .requests-layout {
     grid-template-columns: 1fr;
+  }
+
+  .queue-table-head {
+    display: none;
+  }
+
+  .queue-item-grid {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
   }
 
   .nav-toggle {

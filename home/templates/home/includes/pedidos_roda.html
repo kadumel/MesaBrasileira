@@ -89,6 +89,13 @@
       <h3>Fila da roda</h3>
       <span class="queue-refresh" title="Atualiza automaticamente">● ao vivo</span>
     </div>
+    <div class="queue-table">
+      <div class="queue-table-head" role="row" aria-hidden="true">
+        <span class="queue-th queue-th--status">Estado</span>
+        <span class="queue-th queue-th--musica">Música</span>
+        <span class="queue-th queue-th--artista">Artista</span>
+        <span class="queue-th queue-th--por">Pedido por</span>
+      </div>
     <ul class="queue-list" id="queue-list">
       {% for pedido in pedidos %}
       <li
@@ -97,21 +104,30 @@
         data-tocado="{% if pedido.tocado %}1{% else %}0{% endif %}"
       >
         <div class="queue-item-body">
-          <div class="queue-item-top">
-            {% if pedido.tocado %}
-            <span class="badge badge-queue badge-queue--tocada">Já tocada</span>
-            {% else %}
-            <span class="badge badge-queue badge-queue--fila">Em fila</span>
-            {% endif %}
-          </div>
-          <div class="queue-item-main">
-            <strong>{{ pedido.musica }}</strong>
-            {% if pedido.artista %}<span>{{ pedido.artista }}</span>{% endif %}
-            <em>— {{ pedido.pedido_por }}</em>
+          <div class="queue-item-grid">
+            <div class="queue-col-status">
+              {% if pedido.tocado %}
+              <span class="badge badge-queue badge-queue--tocada">Já tocada</span>
+              {% else %}
+              <span class="badge badge-queue badge-queue--fila">Em fila</span>
+              {% endif %}
+            </div>
+            <div class="queue-col-musica">
+              <span class="queue-field-label">Música:</span>
+              <span class="queue-field-value">{{ pedido.musica }}</span>
+            </div>
+            <div class="queue-col-artista">
+              <span class="queue-field-label">Artista:</span>
+              <span class="queue-field-value">{% if pedido.artista %}{{ pedido.artista }}{% else %}<span class="queue-td-empty">—</span>{% endif %}</span>
+            </div>
+            <div class="queue-col-por">
+              <span class="queue-field-label">Pedido por:</span>
+              <span class="queue-field-value">{{ pedido.pedido_por }}</span>
+            </div>
           </div>
           {% if pedido.mensagem %}
           <p class="queue-item-note queue-item-note--public">
-            <span class="queue-item-note-label">Pedido:</span> {{ pedido.mensagem }}
+            <span class="queue-item-note-label">Mensagem:</span> {{ pedido.mensagem }}
           </p>
           {% endif %}
           {% if pedido.observacao_equipe %}
@@ -159,5 +175,6 @@
       <li class="queue-empty" id="queue-empty">A fila está vazia — seja o primeiro!</li>
       {% endfor %}
     </ul>
+    </div>
   </div>
 </div>

@@ -524,7 +524,16 @@ class PedidoMusica(models.Model):
         help_text="Mensagem visível na fila para quem pediu (ex.: já tocamos antes).",
     )
     tocado = models.BooleanField(default=False, verbose_name="Já tocámos")
-    tocado_em = models.DateTimeField(null=True, blank=True)
+    tocado_em = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Tocada em",
+        help_text="Data/hora em que a música foi marcada como tocada (ordem na fila).",
+    )
+    atualizado_em = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Última atualização",
+    )
     marcado_por = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -543,6 +552,19 @@ class PedidoMusica(models.Model):
     def __str__(self):
         return f"{self.musica} — {self.pedido_por}"
 
+    @classmethod
+    def ordenar_para_fila(cls, queryset=None):
+        """
+        Em fila no topo, por id crescente (ordem do pedido).
+        Tocadas abaixo, por atualizado_em decrescente (a mais recente primeiro).
+        """
+        from itertools import chain
+
+        qs = queryset if queryset is not None else cls.objects.all()
+        em_fila = qs.filter(tocado=False).order_by("id")
+        tocadas = qs.filter(tocado=True).order_by("-atualizado_em", "-id")
+        return list(chain(em_fila, tocadas))
+
     @property
     def marcado_por_exibir(self):
         if not self.marcado_por_id:
@@ -554,7 +576,7 @@ class PedidoMusica(models.Model):
     def marcar_tocado(self, observacao_equipe=None, user=None):
         self.tocado = True
         self.tocado_em = timezone.now()
-        update_fields = ["tocado", "tocado_em", "marcado_por"]
+        update_fields = ["tocado", "tocado_em", "marcado_por", "atualizado_em"]
         if user is not None and getattr(user, "is_authenticated", False):
             self.marcado_por = user
         if observacao_equipe is not None:
@@ -723,6 +745,18 @@ class ConfiguracaoHome(models.Model):
             "Deixe vazio para usar o texto predefinido."
         ),
     )
+    loja_mbway_telefone = models.CharField(
+        max_length=30,
+        blank=True,
+        verbose_name="Telefone MB Way",
+        help_text="Exibido na página de pagamento e confirmação do pedido.",
+    )
+    loja_iban = models.CharField(
+        max_length=40,
+        blank=True,
+        verbose_name="IBAN (transferência)",
+        help_text="IBAN para pagamento por transferência bancária.",
+    )
 
     TEXTO_PADRAO_PEDIR_MUSICA = (
         "Peça a música que quer ouvir e acompanhe a fila ao vivo. Quando a mesa responder "
@@ -793,6 +827,14 @@ class ConfiguracaoHome(models.Model):
     def videos_lead_exibir(self):
         texto = (self.videos_descricao or "").strip()
         return texto or self.TEXTO_PADRAO_VIDEOS
+
+    @property
+    def mbway_telefone_exibir(self):
+        return (self.loja_mbway_telefone or "").strip()
+
+    @property
+    def iban_exibir(self):
+        return (self.loja_iban or "").strip()
 
     @property
     def instagram_permalink(self):

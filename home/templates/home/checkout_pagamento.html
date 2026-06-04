@@ -23,7 +23,7 @@
       <p><strong>Transferência:</strong> IBAN <code class="checkout-iban">{{ iban }}</code> — referência: <strong>{{ pedido.numero }}</strong></p>
       {% endif %}
       {% if not mbway_telefone and not iban %}
-      <p class="muted">Configure LOJA_MBWAY_TELEFONE e LOJA_IBAN no ambiente para mostrar dados de pagamento aqui.</p>
+      <p class="muted">Configure o telefone MB Way e o IBAN em Admin → Configuração da página inicial → Vendas.</p>
       {% endif %}
     </div>
 

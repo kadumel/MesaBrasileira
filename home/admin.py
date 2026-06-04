@@ -80,6 +80,16 @@ class ConfiguracaoHomeAdmin(admin.ModelAdmin):
                 "description": "Texto introdutório da página pública «Vídeos» (/videos/).",
             },
         ),
+        (
+            "Vendas",
+            {
+                "fields": ("loja_mbway_telefone", "loja_iban"),
+                "description": (
+                    "Dados de pagamento na loja (checkout e confirmação do pedido). "
+                    "Deixe vazio para ocultar essa forma de pagamento na página."
+                ),
+            },
+        ),
     )
 
     def has_add_permission(self, request):
@@ -476,7 +486,7 @@ class PedidoAdmin(admin.ModelAdmin):
 class PedidoMusicaInline(admin.TabularInline):
     model = PedidoMusica
     extra = 0
-    readonly_fields = ("criado_em", "tocado_em", "marcado_por")
+    readonly_fields = ("criado_em", "tocado_em", "atualizado_em", "marcado_por")
     fields = (
         "musica",
         "artista",
@@ -519,6 +529,7 @@ class PedidoMusicaAdmin(admin.ModelAdmin):
         "pedido_por",
         "evento",
         "tocado",
+        "tocado_em",
         "marcado_por",
         "observacao_equipe",
         "criado_em",
