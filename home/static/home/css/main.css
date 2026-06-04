@@ -1092,14 +1092,15 @@ a:hover {
 }
 
 .queue-btn--tocada {
-  background: var(--brown);
-  color: var(--cream-light);
-  border-color: var(--brown);
+  background: var(--green);
+  color: #fff;
+  border-color: var(--green);
 }
 
 .queue-btn--tocada:hover {
-  background: var(--brown-deep);
-  color: var(--cream-light);
+  background: #007a2f;
+  color: #fff;
+  border-color: #007a2f;
 }
 
 .queue-btn--rejeitada {
