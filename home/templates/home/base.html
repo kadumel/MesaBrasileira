@@ -23,6 +23,21 @@
   <link rel="stylesheet" href="{% static 'home/css/main.css' %}?v=20">
 </head>
 <body>
+  <audio
+    id="site-samba-audio"
+    data-site-audio
+    loop
+    autoplay
+    preload="auto"
+    playsinline
+  >
+    {% if config_home.audio_roda %}
+    <source src="{{ config_home.audio_roda.url }}" type="audio/mpeg">
+    {% else %}
+    <source src="{% static 'home/audio/o-mesa-chegou.mp3' %}" type="audio/mpeg">
+    {% endif %}
+  </audio>
+  <script src="{% static 'home/js/site-audio.js' %}?v=1"></script>
   <div class="grain" aria-hidden="true"></div>
   {% include "home/includes/header.html" %}
   <main class="{% block main_class %}{% endblock %}">

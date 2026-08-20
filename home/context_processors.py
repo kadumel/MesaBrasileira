@@ -1,6 +1,6 @@
 from .cart import cart_count
 from .constants import INSTAGRAM_URL
-from .models import Produto
+from .models import ConfiguracaoHome, Produto
 
 
 def site(request):
@@ -8,4 +8,5 @@ def site(request):
         "instagram_url": INSTAGRAM_URL,
         "cart_count": cart_count(request.session),
         "loja_disponivel": Produto.objects.filter(ativo=True).exists(),
+        "config_home": ConfiguracaoHome.get_solo(),
     }

@@ -57,37 +57,6 @@
     </div>
   </div>
 
-  <audio
-    id="roda-hero-audio"
-    data-roda-audio-el
-    loop
-    autoplay
-    preload="auto"
-    playsinline
-  >
-    {% if config_home.audio_roda %}
-    <source src="{{ config_home.audio_roda.url }}" type="audio/mpeg">
-    {% else %}
-    <source src="{% static 'home/audio/o-mesa-chegou.mp3' %}" type="audio/mpeg">
-    {% endif %}
-  </audio>
-  <script>
-    (function () {
-      var audio = document.getElementById("roda-hero-audio");
-      if (!audio) return;
-      audio.volume = 0.42;
-      var start = audio.play();
-      if (start && start.catch) {
-        start.catch(function () {
-          audio.muted = true;
-          audio.play().then(function () {
-            audio.muted = false;
-          }).catch(function () {});
-        });
-      }
-    })();
-  </script>
-
   <a class="roda-hero-scroll" href="#banner" aria-label="Seguir para os destaques">
     <span class="roda-hero-scroll-dot" aria-hidden="true"></span>
     <span>Descer</span>

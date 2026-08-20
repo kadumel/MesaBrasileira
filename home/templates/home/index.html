@@ -166,23 +166,9 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-  (function () {
-    var audio = document.getElementById("roda-hero-audio");
-    if (!audio) return;
-    audio.volume = 0.42;
-    var start = audio.play();
-    if (start && start.catch) {
-      start.catch(function () {
-        audio.muted = true;
-        audio.play().then(function () { audio.muted = false; }).catch(function () {});
-      });
-    }
-  })();
-</script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
-<script src="{% static 'home/js/roda-hero.js' %}?v=9"></script>
+<script src="{% static 'home/js/roda-hero.js' %}?v=10"></script>
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 {% if config_home.instagram_usar_embed %}
 <script async src="https://www.instagram.com/embed.js"></script>
