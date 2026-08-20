@@ -18,9 +18,11 @@
       <li>
         <a href="{% url 'home:eventos' %}" class="{% if nav_active == 'eventos' %}nav-active{% endif %}">Eventos</a>
       </li>
+      {% if loja_disponivel %}
       <li>
         <a href="{% url 'home:loja' %}" class="{% if nav_active == 'loja' %}nav-active{% endif %}">Loja</a>
       </li>
+      {% endif %}
       <li>
         <a href="{% url 'home:index' %}#parceiros" class="{% if nav_active == 'parceiros' %}nav-active{% endif %}">Parceiros</a>
       </li>
@@ -30,6 +32,7 @@
       <li>
         <a href="{% url 'home:contato' %}" class="{% if nav_active == 'contato' %}nav-active{% endif %}">Contato</a>
       </li>
+      {% if loja_disponivel %}
       <li>
         <a href="{% url 'home:carrinho' %}" class="nav-cart {% if nav_active == 'loja' %}nav-active{% endif %}" aria-label="Carrinho{% if cart_count %} com {{ cart_count }} item{{ cart_count|pluralize:'s' }}{% endif %}">
           <span class="nav-cart-icon" aria-hidden="true">
@@ -42,6 +45,7 @@
           {% if cart_count %}<span class="nav-cart-badge">{{ cart_count }}</span>{% endif %}
         </a>
       </li>
+      {% endif %}
       {% if user.is_authenticated %}
       <li>
         <form method="post" action="{% url 'home:logout' %}" class="nav-logout-form">

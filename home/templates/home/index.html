@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}Mesa Brasileira | Samba &amp; Comunidade{% endblock %}
-{% block meta_description %}Projeto Mesa Brasileira — samba, roda e comunidade. Eventos, loja e vídeos dos nossos encontros.{% endblock %}
+{% block meta_description %}Projeto Mesa Brasileira — samba, roda e comunidade. Eventos e vídeos dos nossos encontros.{% endblock %}
 {% block main_class %}home-main{% endblock %}
 
 {% block extra_css %}
@@ -45,7 +45,9 @@
       <div class="hero-actions">
         <a href="{% url 'home:eventos' %}" class="btn btn-primary">Agenda completa</a>
         <a href="{% url 'home:pedir_musica' %}" class="btn btn-outline">Pedir música</a>
+        {% if loja_disponivel %}
         <a href="{% url 'home:loja' %}" class="btn btn-outline">Loja</a>
+        {% endif %}
       </div>
     </div>
     {% include "home/includes/intro_hero_media.html" %}
@@ -75,6 +77,7 @@
   </div>
 </section>
 
+{% if loja_disponivel %}
 <section class="section section-shop" id="loja">
   <div class="container">
     <header class="section-header section-header--row reveal">
@@ -86,17 +89,14 @@
       <a href="{% url 'home:loja' %}" class="btn btn-outline btn-sm">Ver loja</a>
     </header>
 
-    {% if produtos %}
     <div class="product-grid reveal-stagger">
       {% for produto in produtos %}
       <div>{% include "home/includes/product_card.html" with produto=produto %}</div>
       {% endfor %}
     </div>
-    {% else %}
-    <p class="empty-state reveal">Cadastre produtos no admin ou <a href="{% url 'home:loja' %}">visite a loja</a>.</p>
-    {% endif %}
   </div>
 </section>
+{% endif %}
 
 <section class="section section-videos" id="videos">
   <div class="container">

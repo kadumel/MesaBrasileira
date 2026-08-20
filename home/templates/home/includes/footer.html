@@ -13,7 +13,9 @@
     </div>
     <nav class="footer-nav">
       <a href="{% url 'home:eventos' %}">Eventos</a>
+      {% if loja_disponivel %}
       <a href="{% url 'home:loja' %}">Loja</a>
+      {% endif %}
       <a href="{% url 'home:index' %}#parceiros">Parceiros</a>
       <a href="{% url 'home:pedir_musica' %}">Pedir música</a>
       <a href="{% url 'home:sobre' %}">Sobre</a>
