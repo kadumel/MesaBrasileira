@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 250" fill="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="surdo-body" x1="30" y1="40" x2="190" y2="220" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6b5344"/>
+      <stop offset="0.45" stop-color="#4b3621"/>
+      <stop offset="1" stop-color="#3d2b1a"/>
+    </linearGradient>
+    <radialGradient id="surdo-skin" cx="50%" cy="42%" r="58%">
+      <stop offset="0" stop-color="#faf6ef"/>
+      <stop offset="0.7" stop-color="#e6d5b8"/>
+      <stop offset="1" stop-color="#c4a574"/>
+    </radialGradient>
+    <linearGradient id="surdo-hoop" x1="20" y1="40" x2="200" y2="80" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#d4c4a8"/>
+      <stop offset="0.5" stop-color="#8a7355"/>
+      <stop offset="1" stop-color="#c9b08a"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="110" cy="218" rx="68" ry="14" fill="#3d2b1a" opacity="0.22"/>
+  <path d="M42 78 C42 78 38 200 38 208 C38 220 68 232 110 232 C152 232 182 220 182 208 C182 200 178 78 178 78 Z" fill="url(#surdo-body)"/>
+  <path d="M52 90 C58 150 62 200 62 208" stroke="#3d2b1a" stroke-width="1.2" opacity="0.35"/>
+  <path d="M110 96 C110 160 110 210 110 226" stroke="#6b5344" stroke-width="1" opacity="0.25"/>
+  <path d="M168 90 C162 150 158 200 158 208" stroke="#2a1c12" stroke-width="1.2" opacity="0.3"/>
+  <ellipse cx="110" cy="78" rx="78" ry="36" fill="url(#surdo-hoop)"/>
+  <ellipse cx="110" cy="76" rx="68" ry="30" fill="url(#surdo-skin)"/>
+  <ellipse cx="96" cy="68" rx="22" ry="10" fill="#fff" opacity="0.28"/>
+  <g stroke="#8a7355" stroke-width="2.4" stroke-linecap="round">
+    <line x1="48" y1="78" x2="46" y2="198"/>
+    <line x1="74" y1="68" x2="72" y2="210"/>
+    <line x1="110" y1="64" x2="110" y2="214"/>
+    <line x1="146" y1="68" x2="148" y2="210"/>
+    <line x1="172" y1="78" x2="174" y2="198"/>
+  </g>
+  <g fill="#c9b08a">
+    <circle cx="48" cy="78" r="4.5"/>
+    <circle cx="74" cy="66" r="4.5"/>
+    <circle cx="110" cy="62" r="4.5"/>
+    <circle cx="146" cy="66" r="4.5"/>
+    <circle cx="172" cy="78" r="4.5"/>
+  </g>
+  <ellipse cx="110" cy="208" rx="72" ry="16" fill="#3d2b1a" opacity="0.45"/>
+  <ellipse cx="110" cy="206" rx="64" ry="12" fill="#6b5344"/>
+</svg>

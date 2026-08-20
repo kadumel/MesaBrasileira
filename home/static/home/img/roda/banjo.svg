@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 160" fill="none" aria-hidden="true">
+  <defs>
+    <radialGradient id="bj-skin" cx="46%" cy="40%" r="58%">
+      <stop offset="0" stop-color="#faf6ef"/>
+      <stop offset="0.65" stop-color="#e6d5b8"/>
+      <stop offset="1" stop-color="#c4a070"/>
+    </radialGradient>
+    <linearGradient id="bj-neck" x1="160" y1="70" x2="290" y2="90" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6b5344"/>
+      <stop offset="1" stop-color="#3d2b1a"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="96" cy="132" rx="62" ry="12" fill="#3d2b1a" opacity="0.18"/>
+  <ellipse cx="96" cy="86" rx="78" ry="54" fill="#4b3621"/>
+  <ellipse cx="96" cy="84" rx="70" ry="48" fill="#c9b08a"/>
+  <ellipse cx="96" cy="82" rx="62" ry="42" fill="url(#bj-skin)"/>
+  <ellipse cx="84" cy="70" rx="20" ry="12" fill="#fff" opacity="0.22"/>
+  <g fill="#8a7355">
+    <circle cx="96" cy="34" r="4"/>
+    <circle cx="132" cy="48" r="4"/>
+    <circle cx="152" cy="82" r="4"/>
+    <circle cx="140" cy="116" r="4"/>
+    <circle cx="104" cy="130" r="4"/>
+    <circle cx="64" cy="124" r="4"/>
+    <circle cx="40" cy="94" r="4"/>
+    <circle cx="44" cy="56" r="4"/>
+  </g>
+  <rect x="154" y="74" width="108" height="16" rx="3" fill="url(#bj-neck)"/>
+  <rect x="154" y="77" width="108" height="4" fill="#8a6240" opacity="0.4"/>
+  <rect x="256" y="58" width="28" height="48" rx="5" fill="#3d2b1a"/>
+  <g fill="#ffcc29">
+    <circle cx="266" cy="68" r="3.4"/>
+    <circle cx="276" cy="78" r="3.4"/>
+    <circle cx="266" cy="88" r="3.4"/>
+    <circle cx="276" cy="98" r="3.4"/>
+  </g>
+  <g stroke="#4b3621" stroke-width="0.9" opacity="0.75">
+    <line x1="96" y1="74" x2="268" y2="68"/>
+    <line x1="96" y1="80" x2="276" y2="78"/>
+    <line x1="96" y1="86" x2="268" y2="88"/>
+    <line x1="96" y1="92" x2="276" y2="98"/>
+  </g>
+  <rect x="88" y="76" width="16" height="12" rx="1" fill="#6b5344"/>
+  <polygon points="104,78 114,82 104,86" fill="#c9b08a"/>
+</svg>

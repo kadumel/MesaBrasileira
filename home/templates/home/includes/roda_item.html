@@ -1,0 +1,26 @@
+{% load static %}
+<figure
+  class="roda-item roda-item--{{ kind }}"
+  data-roda-item
+  data-kind="{{ kind }}"
+  data-order="{{ order }}"
+  data-depth="{{ depth }}"
+  style="--x: {{ x }}; --y: {{ y }}; --s: {{ s }}; --rot: {{ rot }}; --flip: {{ flip|default:'1' }}; --z: {{ z }}; --w: {{ w }};"
+>
+  <div class="roda-item-slot">
+    <div class="roda-item-motion">
+      <div class="roda-item-parallax">
+        <img
+          src="{% static src %}{% if cache %}?v={{ cache }}{% endif %}"
+          alt="{{ alt }}"
+          width="{{ iw }}"
+          height="{{ ih }}"
+          decoding="async"
+        >
+        {% if caption %}
+        <span class="roda-item-name">{{ caption }}</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</figure>

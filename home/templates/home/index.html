@@ -7,10 +7,13 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+<link rel="stylesheet" href="{% static 'home/css/roda-hero.css' %}?v=6">
 {% endblock %}
 
 {% block content %}
-{# Carrossel principal — logo abaixo do menu #}
+{% include "home/includes/roda_hero.html" %}
+
+{# Carrossel principal — abaixo da roda #}
 <section class="home-banner" id="banner" aria-label="Eventos e destaques">
   {% if slides_home %}
   <div class="swiper banner-swiper">
@@ -37,7 +40,7 @@
   <div class="container intro-hero-inner reveal">
     <div class="intro-hero-text">
       <p class="eyebrow">Em respeito ao nosso samba</p>
-      <h1>Mesa <span>Brasileira</span></h1>
+      <h2>Mesa <span>Brasileira</span></h2>
       <p class="hero-lead">
         Projeto de samba com roda, perto e calor humano. Acompanhe os nossos eventos,
         peça a sua música e leve a energia da mesa para casa.
@@ -163,6 +166,23 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+  (function () {
+    var audio = document.getElementById("roda-hero-audio");
+    if (!audio) return;
+    audio.volume = 0.42;
+    var start = audio.play();
+    if (start && start.catch) {
+      start.catch(function () {
+        audio.muted = true;
+        audio.play().then(function () { audio.muted = false; }).catch(function () {});
+      });
+    }
+  })();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
+<script src="{% static 'home/js/roda-hero.js' %}?v=9"></script>
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 {% if config_home.instagram_usar_embed %}
 <script async src="https://www.instagram.com/embed.js"></script>

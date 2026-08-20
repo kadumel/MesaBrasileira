@@ -40,7 +40,7 @@ class MotivoRejeicaoAdmin(admin.ModelAdmin):
 
 @admin.register(ConfiguracaoHome)
 class ConfiguracaoHomeAdmin(admin.ModelAdmin):
-    readonly_fields = ("preview_intro",)
+    readonly_fields = ("preview_intro", "preview_audio_roda")
 
     fieldsets = (
         (
@@ -82,6 +82,17 @@ class ConfiguracaoHomeAdmin(admin.ModelAdmin):
                 "description": (
                     "Usado quando o modo é «Vídeo enviado». "
                     "Os ficheiros ficam em MEDIA_ROOT (configure o volume no Railway)."
+                ),
+            },
+        ),
+        (
+            "Samba da página inicial",
+            {
+                "fields": ("audio_roda", "preview_audio_roda"),
+                "description": (
+                    "MP3 tocado automaticamente no hero da roda de samba. "
+                    "Se vazio, usa o ficheiro padrão do site. "
+                    "O ficheiro fica em MEDIA_ROOT (configure o volume no Railway)."
                 ),
             },
         ),
@@ -158,6 +169,15 @@ class ConfiguracaoHomeAdmin(admin.ModelAdmin):
                 obj.logo_personalizada_url,
             )
         return "Logo padrão do site"
+
+    @admin.display(description="Pré-visualização do MP3")
+    def preview_audio_roda(self, obj):
+        if not obj or not obj.audio_roda:
+            return "Nenhum MP3 enviado — a home usa o samba padrão."
+        return format_html(
+            '<audio src="{}" controls style="max-width:320px;width:100%"></audio>',
+            obj.audio_roda.url,
+        )
 
     def save_model(self, request, obj, form, change):
         capa_ok = False

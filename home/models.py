@@ -4,7 +4,7 @@ from datetime import timedelta
 from decimal import Decimal
 
 from django.conf import settings
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import FileExtensionValidator, MaxValueValidator, MinValueValidator
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -931,6 +931,18 @@ class ConfiguracaoHome(models.Model):
         verbose_name="Capa do vídeo",
         help_text="Imagem exibida antes de dar play (opcional).",
     )
+    audio_roda = models.FileField(
+        upload_to="home/roda/audio/",
+        blank=True,
+        null=True,
+        validators=[FileExtensionValidator(allowed_extensions=["mp3"])],
+        verbose_name="Samba da página inicial (MP3)",
+        help_text=(
+            "MP3 tocado automaticamente no hero da roda. "
+            "Se vazio, usa o ficheiro padrão do site. "
+            "Gravado no volume MEDIA_ROOT (Railway)."
+        ),
+    )
     limite_pedidos_em_fila = models.PositiveIntegerField(
         default=15,
         validators=[MinValueValidator(1), MaxValueValidator(200)],
@@ -1120,6 +1132,12 @@ class ConfiguracaoHome(models.Model):
         if name.endswith(".mov"):
             return "video/quicktime"
         return "video/mp4"
+
+    @property
+    def audio_roda_url(self):
+        if self.audio_roda:
+            return self.audio_roda.url
+        return ""
 
 
 class Contato(models.Model):

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 140" fill="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="cv-wood" x1="40" y1="20" x2="200" y2="120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#c45a1a"/>
+      <stop offset="0.4" stop-color="#8a4a22"/>
+      <stop offset="1" stop-color="#4b3621"/>
+    </linearGradient>
+    <radialGradient id="cv-top" cx="40%" cy="40%" r="60%">
+      <stop offset="0" stop-color="#d4783a"/>
+      <stop offset="1" stop-color="#6b3a1c"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="118" cy="118" rx="70" ry="12" fill="#3d2b1a" opacity="0.18"/>
+  <path d="M48 78 C48 42 78 22 118 22 C158 22 188 42 188 70 C188 92 168 108 140 114 C118 118 92 114 70 104 C54 96 48 88 48 78 Z" fill="url(#cv-top)"/>
+  <path d="M62 74 C70 50 92 36 118 36 C146 36 168 50 176 70" stroke="#f5c19a" stroke-width="1.2" opacity="0.28"/>
+  <ellipse cx="118" cy="72" rx="16" ry="11" fill="#2a1c12"/>
+  <ellipse cx="118" cy="72" rx="11" ry="7.5" fill="#1a120c"/>
+  <ellipse cx="118" cy="72" rx="4" ry="2.5" fill="#c9b08a" opacity="0.7"/>
+  <rect x="182" y="62" width="72" height="14" rx="3" fill="#5c3d24"/>
+  <rect x="182" y="64" width="72" height="4" fill="#8a6240" opacity="0.5"/>
+  <rect x="248" y="50" width="22" height="38" rx="4" fill="#3d2b1a"/>
+  <g fill="#c9b08a">
+    <circle cx="257" cy="58" r="3.2"/>
+    <circle cx="265" cy="66" r="3.2"/>
+    <circle cx="257" cy="74" r="3.2"/>
+    <circle cx="265" cy="82" r="3.2"/>
+  </g>
+  <g stroke="#e6d5b8" stroke-width="0.9" opacity="0.85">
+    <line x1="118" y1="66" x2="258" y2="58"/>
+    <line x1="118" y1="70" x2="266" y2="66"/>
+    <line x1="118" y1="74" x2="258" y2="74"/>
+    <line x1="118" y1="78" x2="266" y2="82"/>
+  </g>
+  <polygon points="128,68 138,72 128,76" fill="#c9b08a"/>
+  <rect x="108" y="88" width="20" height="8" rx="2" transform="rotate(-18 118 92)" fill="#4b3621"/>
+</svg>

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 230" fill="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="tt-body" x1="40" y1="50" x2="170" y2="200" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8a6240"/>
+      <stop offset="0.5" stop-color="#5c3d24"/>
+      <stop offset="1" stop-color="#3d2b1a"/>
+    </linearGradient>
+    <radialGradient id="tt-skin" cx="48%" cy="40%" r="55%">
+      <stop offset="0" stop-color="#f5f0e6"/>
+      <stop offset="0.75" stop-color="#d4c4a8"/>
+      <stop offset="1" stop-color="#b08968"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="100" cy="206" rx="58" ry="12" fill="#3d2b1a" opacity="0.2"/>
+  <path d="M48 72 C40 120 38 178 44 196 C52 212 74 220 100 220 C126 220 148 212 156 196 C162 178 160 120 152 72 Z" fill="url(#tt-body)"/>
+  <path d="M100 80 C100 140 100 190 100 212" stroke="#3d2b1a" stroke-width="1" opacity="0.25"/>
+  <ellipse cx="100" cy="70" rx="64" ry="30" fill="#c9b08a"/>
+  <ellipse cx="100" cy="68" rx="56" ry="25" fill="url(#tt-skin)"/>
+  <ellipse cx="88" cy="60" rx="16" ry="8" fill="#fff" opacity="0.25"/>
+  <path d="M42 78 C28 64 24 48 38 40 C50 34 62 44 58 58" stroke="#c45a1a" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <path d="M58 56 C70 48 86 46 100 50" stroke="#c45a1a" stroke-width="3.5" stroke-linecap="round" fill="none" opacity="0.85"/>
+  <g stroke="#8a7355" stroke-width="2" stroke-linecap="round">
+    <line x1="52" y1="72" x2="50" y2="188"/>
+    <line x1="76" y1="62" x2="74" y2="200"/>
+    <line x1="124" y1="62" x2="126" y2="200"/>
+    <line x1="148" y1="72" x2="150" y2="188"/>
+  </g>
+  <g fill="#d4c4a8">
+    <circle cx="52" cy="72" r="3.8"/>
+    <circle cx="76" cy="60" r="3.8"/>
+    <circle cx="100" cy="56" r="3.8"/>
+    <circle cx="124" cy="60" r="3.8"/>
+    <circle cx="148" cy="72" r="3.8"/>
+  </g>
+  <ellipse cx="100" cy="196" rx="56" ry="14" fill="#3d2b1a" opacity="0.4"/>
+  <ellipse cx="100" cy="194" rx="50" ry="10" fill="#5c3d24"/>
+</svg>

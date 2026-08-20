@@ -1660,7 +1660,8 @@ a:hover {
   margin-bottom: 0.4rem;
 }
 
-.intro-hero h1 {
+.intro-hero h1,
+.intro-hero h2 {
   font-family: var(--font-display);
   font-size: clamp(2.15rem, 6vw, 3.35rem);
   margin: 0 0 0.75rem;
@@ -1678,7 +1679,8 @@ a:hover {
   gap: 0.65rem;
 }
 
-.intro-hero h1 span {
+.intro-hero h1 span,
+.intro-hero h2 span {
   color: var(--green);
 }
 
@@ -2532,7 +2534,8 @@ a.patrocinador-card:hover {
     gap: 1rem 1.25rem;
   }
 
-  .intro-hero h1 {
+  .intro-hero h1,
+  .intro-hero h2 {
     font-size: clamp(1.9rem, 7vw, 2.5rem);
   }
 
