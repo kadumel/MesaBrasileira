@@ -9,7 +9,7 @@ IMG_MUSIC = "https://images.unsplash.com/photo-1511379938549-c1f69419868d?w=1920
 
 
 class Command(BaseCommand):
-    help = "Cria slides do carrossel e patrocinadores de exemplo"
+    help = "Cria slides do carrossel e parceiros de exemplo"
 
     def handle(self, *args, **options):
         if not SlideHome.objects.exists():
@@ -64,6 +64,6 @@ class Command(BaseCommand):
                     ),
                 ]
             )
-            self.stdout.write(self.style.SUCCESS("Patrocinadores de exemplo criados."))
+            self.stdout.write(self.style.SUCCESS("Parceiros de exemplo criados."))
         else:
-            self.stdout.write("Patrocinadores já existem — ignorado.")
+            self.stdout.write("Parceiros já existem — ignorado.")

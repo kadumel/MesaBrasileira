@@ -1,0 +1,25 @@
+{% extends "home/emails/base.html" %}
+
+{% block title %}Nova mensagem de contacto | {{ site_nome }}{% endblock %}
+
+{% block content %}
+<p style="margin:0 0 16px;font-size:17px;color:{{ cor_brown }};">
+  Recebeu uma nova mensagem pelo formulário de contacto do site.
+</p>
+
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:{{ cor_cream_light }};border:1px solid {{ cor_border }};border-radius:10px;margin:0 0 20px;">
+  <tr>
+    <td style="padding:16px 18px;font-size:14px;color:{{ cor_brown }};line-height:1.55;">
+      <p style="margin:0 0 10px;"><strong>Nome:</strong> {{ nome }}</p>
+      <p style="margin:0 0 10px;"><strong>Email:</strong> <a href="mailto:{{ email }}" style="color:{{ cor_green }};">{{ email }}</a></p>
+      <p style="margin:0 0 10px;"><strong>Assunto:</strong> {{ assunto }}</p>
+      <p style="margin:0 0 6px;"><strong>Mensagem:</strong></p>
+      <p style="margin:0;white-space:pre-wrap;">{{ mensagem }}</p>
+    </td>
+  </tr>
+</table>
+
+<p style="margin:0;font-size:13px;color:{{ cor_brown_muted }};">
+  Responda a este email para contactar directamente {{ nome }}.
+</p>
+{% endblock %}

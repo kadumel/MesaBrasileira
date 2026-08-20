@@ -38,11 +38,10 @@
       <div class="detail-text">{{ evento.descricao|linebreaks }}</div>
       {% endif %}
       <div class="detail-actions">
-        {% if evento.link %}
-        <a href="{{ evento.link }}" class="btn btn-primary" target="_blank" rel="noopener">Mais informações</a>
+        {% if evento.instagram_videos_exibir %}
+        <a href="{{ evento.instagram_videos_exibir }}" class="btn btn-outline" target="_blank" rel="noopener">Ver vídeos no Instagram</a>
         {% endif %}
         <a href="{% url 'home:eventos' %}" class="btn btn-outline">← Todos os eventos</a>
-        <a href="{% url 'home:pedir_musica' %}" class="btn btn-ghost">Pedir música na roda</a>
       </div>
     </div>
   </div>

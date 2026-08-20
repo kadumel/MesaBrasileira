@@ -156,6 +156,9 @@
     if (p.mensagem) {
       html += `<p class="queue-item-note queue-item-note--public"><span class="queue-item-note-label">Mensagem:</span> ${escapeHtml(p.mensagem)}</p>`;
     }
+    if (p.motivo_rejeicao_exibir) {
+      html += `<p class="queue-item-note queue-item-note--motivo" role="status"><span class="queue-item-note-label">Motivo:</span> ${escapeHtml(p.motivo_rejeicao_exibir)}</p>`;
+    }
     if (p.observacao_equipe) {
       html += `<p class="queue-item-note queue-item-note--resposta" role="status"><span class="queue-item-note-label">Resposta da mesa:</span> ${escapeHtml(p.observacao_equipe)}</p>`;
     }
@@ -202,11 +205,44 @@
     return wrap ? wrap.querySelector(".queue-resposta-input") : null;
   }
 
+  function motivoSelectDoPedido(formEl) {
+    const wrap = formEl && formEl.closest(".queue-equipe-actions");
+    return wrap ? wrap.querySelector(".queue-motivo-select") : null;
+  }
+
+  function motivosRejeicaoOpcoes() {
+    if (!queuePanel) {
+      return [];
+    }
+    try {
+      const raw = queuePanel.dataset.motivosRejeicao || "[]";
+      const list = JSON.parse(raw);
+      return Array.isArray(list) ? list : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function renderMotivoSelectHtml(pedidoId) {
+    const options = motivosRejeicaoOpcoes()
+      .map(
+        (m) =>
+          `<option value="${escapeHtml(String(m.id))}">${escapeHtml(m.nome)}</option>`
+      )
+      .join("");
+    return `<label class="visually-hidden" for="motivo-js-${pedidoId}">Motivo da rejeição</label>
+      <select id="motivo-js-${pedidoId}" class="form-input form-input--sm queue-motivo-select">
+        <option value="">Motivo da rejeição</option>
+        ${options}
+      </select>`;
+  }
+
   function renderEquipeActionsHtml(p) {
     const token = getCsrfToken();
     return `<div class="queue-equipe-actions">
-      <label class="visually-hidden" for="resp-js-${p.id}">Resposta visível na fila</label>
-      <input type="text" id="resp-js-${p.id}" class="form-input form-input--sm queue-resposta-input" placeholder="Resposta visível na fila (obrigatória ao rejeitar)" maxlength="300">
+      ${renderMotivoSelectHtml(p.id)}
+      <label class="visually-hidden" for="resp-js-${p.id}">Resposta da mesa</label>
+      <input type="text" id="resp-js-${p.id}" class="form-input form-input--sm queue-resposta-input" placeholder="Resposta da mesa (obrigatória ao rejeitar)" maxlength="300">
       <div class="queue-equipe-buttons">
         <form method="post" action="${marcarPedidoUrl(p.id)}" class="marcar-tocado-form">
           <input type="hidden" name="csrfmiddlewaretoken" value="${escapeHtml(token)}">
@@ -252,24 +288,35 @@
     return (
       target &&
       target.closest(
-        ".marcar-tocado-form, .rejeitar-pedido-form, .queue-equipe-actions .queue-resposta-input"
+        ".marcar-tocado-form, .rejeitar-pedido-form, .queue-equipe-actions .queue-resposta-input, .queue-equipe-actions .queue-motivo-select"
       )
     );
   }
 
   function sincronizarRespostaNoForm(formEl) {
     const input = respostaInputDoPedido(formEl);
-    if (!input) {
-      return;
+    if (input) {
+      let hidden = formEl.querySelector('input[name="observacao_equipe"]');
+      if (!hidden) {
+        hidden = document.createElement("input");
+        hidden.type = "hidden";
+        hidden.name = "observacao_equipe";
+        formEl.appendChild(hidden);
+      }
+      hidden.value = input.value;
     }
-    let hidden = formEl.querySelector('input[name="observacao_equipe"]');
-    if (!hidden) {
-      hidden = document.createElement("input");
-      hidden.type = "hidden";
-      hidden.name = "observacao_equipe";
-      formEl.appendChild(hidden);
+
+    const motivo = motivoSelectDoPedido(formEl);
+    if (motivo) {
+      let hiddenMotivo = formEl.querySelector('input[name="motivo_rejeicao"]');
+      if (!hiddenMotivo) {
+        hiddenMotivo = document.createElement("input");
+        hiddenMotivo.type = "hidden";
+        hiddenMotivo.name = "motivo_rejeicao";
+        formEl.appendChild(hiddenMotivo);
+      }
+      hiddenMotivo.value = motivo.value;
     }
-    hidden.value = input.value;
   }
 
   async function enviarFormularioFila(formEl) {
@@ -287,13 +334,19 @@
       if (contentType.includes("application/json")) {
         const data = await res.json();
         const msg =
+          data.errors?.motivo_rejeicao?.[0] ||
           data.errors?.observacao_equipe?.[0] ||
           data.error ||
           "Não foi possível concluir a ação.";
+        const motivo = motivoSelectDoPedido(formEl);
         const input = respostaInputDoPedido(formEl);
-        if (input) {
-          input.setCustomValidity(msg);
-          input.reportValidity();
+        const alvo =
+          data.errors?.motivo_rejeicao && motivo
+            ? motivo
+            : input || motivo;
+        if (alvo) {
+          alvo.setCustomValidity(msg);
+          alvo.reportValidity();
         } else {
           window.alert(msg);
         }
@@ -398,7 +451,10 @@
     queueList.addEventListener(
       "focusin",
       (e) => {
-        if (e.target.closest(".queue-resposta-input")) {
+        if (
+          e.target.closest(".queue-resposta-input") ||
+          e.target.closest(".queue-motivo-select")
+        ) {
           refreshPaused = true;
         }
       },
@@ -421,19 +477,37 @@
       if (!formEl) return;
       e.preventDefault();
       const obs = respostaInputDoPedido(formEl);
+      const motivo = motivoSelectDoPedido(formEl);
       if (formEl.classList.contains("rejeitar-pedido-form")) {
-        if (!obs || !obs.value.trim()) {
-          if (obs) {
-            obs.setCustomValidity("Indique o motivo da rejeição — a resposta é obrigatória.");
-            obs.reportValidity();
-          }
-          return;
+        if (motivo) {
+          motivo.setCustomValidity("");
         }
         if (obs) {
           obs.setCustomValidity("");
         }
-      } else if (obs) {
-        obs.setCustomValidity("");
+        if (!motivo || !motivo.value) {
+          if (motivo) {
+            motivo.setCustomValidity("Seleccione o motivo da rejeição.");
+            motivo.reportValidity();
+          }
+          return;
+        }
+        if (!obs || !obs.value.trim()) {
+          if (obs) {
+            obs.setCustomValidity(
+              "Indique a resposta da mesa — é obrigatória ao rejeitar."
+            );
+            obs.reportValidity();
+          }
+          return;
+        }
+      } else {
+        if (motivo) {
+          motivo.setCustomValidity("");
+        }
+        if (obs) {
+          obs.setCustomValidity("");
+        }
       }
       try {
         await enviarFormularioFila(formEl);
@@ -505,5 +579,11 @@
     });
 
     setInterval(refreshQueue, 12000);
+  }
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {});
+    });
   }
 })();

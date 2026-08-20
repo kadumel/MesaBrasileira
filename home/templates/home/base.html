@@ -6,13 +6,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="{% block meta_description %}Projeto Mesa Brasileira — samba, roda e comunidade.{% endblock %}">
   <title>{% block title %}Mesa Brasileira{% endblock %}</title>
-  <link rel="icon" href="{% static 'home/img/logo.jpg' %}" type="image/jpeg">
-  <meta name="theme-color" content="#e6d5b8">
+
+  <link rel="manifest" href="{% url 'home:web_manifest' %}">
+  <meta name="theme-color" content="#4b3621">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="MB.pt">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="icon" href="{% static 'home/img/logo-mb-pt.png' %}" type="image/png">
+  <link rel="apple-touch-icon" href="{% static 'home/img/apple-touch-icon.png' %}">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   {% block extra_css %}{% endblock %}
-  <link rel="stylesheet" href="{% static 'home/css/main.css' %}?v=12">
+  <link rel="stylesheet" href="{% static 'home/css/main.css' %}?v=19">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -29,6 +37,6 @@
   </main>
   {% include "home/includes/footer.html" %}
   {% block extra_js %}{% endblock %}
-  <script src="{% static 'home/js/main.js' %}?v=7"></script>
+  <script src="{% static 'home/js/main.js' %}?v=9"></script>
 </body>
 </html>

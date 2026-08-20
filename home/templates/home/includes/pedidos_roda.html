@@ -1,7 +1,7 @@
 {% if pode_marcar %}
 <p class="equipe-fila-hint">
   Sessão iniciada como <strong>{{ user.get_username }}</strong> — marque como <strong>tocada</strong> (resposta opcional)
-  ou <strong>rejeite</strong> o pedido (motivo obrigatório, visível na fila para todos).
+  ou <strong>rejeite</strong> o pedido (motivo e resposta da mesa obrigatórios).
 </p>
 {% endif %}
 
@@ -71,7 +71,7 @@
     </form>
     {% else %}
     <div class="empty-event">
-      <p>Nenhum evento de samba ativo com pedidos abertos.</p>
+      <p>Nenhum evento pedir música ativo com pedidos abertos.</p>
       <p class="muted">Volte mais tarde ou consulte a <a href="{% url 'home:eventos' %}">agenda de eventos</a>.</p>
     </div>
     {% endif %}
@@ -84,6 +84,7 @@
     data-pode-marcar="{% if pode_marcar %}1{% else %}0{% endif %}"
     data-marcar-url-sample="{% url 'home:marcar_pedido_tocado' 0 %}"
     data-rejeitar-url-sample="{% url 'home:marcar_pedido_rejeitado' 0 %}"
+    data-motivos-rejeicao='[{% for m in motivos_rejeicao %}{"id":{{ m.pk }},"nome":"{{ m.nome|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'
   >
     <div id="queue-csrf-source" class="visually-hidden" aria-hidden="true">{% csrf_token %}</div>
     <div class="queue-header">
@@ -134,6 +135,12 @@
             <span class="queue-item-note-label">Mensagem:</span> {{ pedido.mensagem }}
           </p>
           {% endif %}
+          {% if pedido.motivo_rejeicao_exibir %}
+          <p class="queue-item-note queue-item-note--motivo" role="status">
+            <span class="queue-item-note-label">Motivo:</span>
+            {{ pedido.motivo_rejeicao_exibir }}
+          </p>
+          {% endif %}
           {% if pedido.observacao_equipe %}
           <p class="queue-item-note queue-item-note--resposta" role="status">
             <span class="queue-item-note-label">Resposta da mesa:</span>
@@ -154,12 +161,22 @@
           <span class="queue-status rejected" aria-label="Pedido rejeitado">✕</span>
           {% elif pode_marcar %}
           <div class="queue-equipe-actions">
-            <label class="visually-hidden" for="resp-{{ pedido.pk }}">Resposta visível na fila</label>
+            <label class="visually-hidden" for="motivo-{{ pedido.pk }}">Motivo da rejeição</label>
+            <select
+              id="motivo-{{ pedido.pk }}"
+              class="form-input form-input--sm queue-motivo-select"
+            >
+              <option value="">Motivo da rejeição</option>
+              {% for m in motivos_rejeicao %}
+              <option value="{{ m.pk }}">{{ m.nome }}</option>
+              {% endfor %}
+            </select>
+            <label class="visually-hidden" for="resp-{{ pedido.pk }}">Resposta da mesa</label>
             <input
               type="text"
               id="resp-{{ pedido.pk }}"
               class="form-input form-input--sm queue-resposta-input"
-              placeholder="Resposta visível na fila (obrigatória ao rejeitar)"
+              placeholder="Resposta da mesa (obrigatória ao rejeitar)"
               maxlength="300"
             >
             <div class="queue-equipe-buttons">

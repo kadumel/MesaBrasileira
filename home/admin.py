@@ -4,17 +4,38 @@ from django.utils.safestring import mark_safe
 
 from .models import (
     ConfiguracaoHome,
+    Contato,
     EventoDestaque,
     EventoSamba,
     ItemPedido,
+    MotivoRejeicao,
     Patrocinador,
     Pedido,
     PedidoMusica,
     Produto,
     SlideHome,
+    SobrePagina,
     TamanhoProduto,
     VideoEvento,
 )
+
+
+@admin.register(Contato)
+class ContatoAdmin(admin.ModelAdmin):
+    list_display = ("nome", "telefone", "email", "ordem", "ativo")
+    list_editable = ("ordem", "ativo")
+    list_filter = ("ativo",)
+    search_fields = ("nome", "telefone", "email")
+    ordering = ("ordem", "nome")
+
+
+@admin.register(MotivoRejeicao)
+class MotivoRejeicaoAdmin(admin.ModelAdmin):
+    list_display = ("nome", "ordem", "ativo")
+    list_editable = ("ordem", "ativo")
+    list_filter = ("ativo",)
+    search_fields = ("nome",)
+    ordering = ("ordem", "nome")
 
 
 @admin.register(ConfiguracaoHome)
@@ -78,6 +99,18 @@ class ConfiguracaoHomeAdmin(admin.ModelAdmin):
             {
                 "fields": ("videos_descricao",),
                 "description": "Texto introdutório da página pública «Vídeos» (/videos/).",
+            },
+        ),
+        (
+            "Contato",
+            {
+                "fields": ("contato_descricao", "contato_email"),
+                "description": (
+                    "Texto introdutório da página pública «Contato» (/contato/). "
+                    "Os contactos (nome, telefone, email) gerem-se em Admin → Contactos. "
+                    "O email abaixo recebe as mensagens do formulário "
+                    "(fallback: CONTATO_EMAIL no .env / Railway)."
+                ),
             },
         ),
         (
@@ -172,6 +205,16 @@ class EventoDestaqueAdmin(admin.ModelAdmin):
             },
         ),
         (
+            "Instagram",
+            {
+                "fields": ("instagram_videos_url",),
+                "description": (
+                    "Link do Instagram onde ficam os vídeos deste evento "
+                    "(visível na página de detalhe do evento)."
+                ),
+            },
+        ),
+        (
             "Imagem",
             {"fields": ("imagem", "imagem_url")},
         ),
@@ -202,6 +245,48 @@ class SlideHomeAdmin(admin.ModelAdmin):
         if not url:
             return "—"
         return format_html('<img src="{}" height="36" style="border-radius:4px"/>', url)
+
+
+@admin.register(SobrePagina)
+class SobrePaginaAdmin(admin.ModelAdmin):
+    fieldsets = (
+        (
+            "Introdução",
+            {
+                "fields": ("subtitulo",),
+            },
+        ),
+        (
+            "Samba na rua, do jeito que tem que ser.",
+            {
+                "fields": ("texto_samba_na_rua",),
+            },
+        ),
+        (
+            "Nossa essência",
+            {
+                "fields": ("texto_nossa_essencia",),
+            },
+        ),
+        (
+            "O samba é o nosso ponto de encontro",
+            {
+                "fields": ("texto_ponto_encontro",),
+            },
+        ),
+        (
+            "Mais que música",
+            {
+                "fields": ("texto_mais_que_musica",),
+            },
+        ),
+    )
+
+    def has_add_permission(self, request):
+        return not SobrePagina.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(Patrocinador)
@@ -240,7 +325,7 @@ class PatrocinadorAdmin(admin.ModelAdmin):
     @admin.display(description="Pré-visualização")
     def preview_logo(self, obj):
         if not obj or not obj.pk:
-            return "Guarde o patrocinador para importar a imagem da URL."
+            return "Guarde o parceiro para importar a imagem da URL."
         if obj.logo:
             return format_html(
                 '<img src="{}" style="max-width:200px;max-height:100px;object-fit:contain"/>'
@@ -499,6 +584,7 @@ class PedidoMusicaInline(admin.TabularInline):
         "pedido_por",
         "mensagem",
         "observacao_equipe",
+        "motivo_rejeicao",
         "tocado",
         "rejeitado",
         "marcado_por",
@@ -512,6 +598,27 @@ class EventoSambaAdmin(admin.ModelAdmin):
     list_filter = ("ativo", "aceita_pedidos")
     search_fields = ("titulo", "local")
     inlines = [PedidoMusicaInline]
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "titulo",
+                    "descricao",
+                    "data",
+                    "local",
+                    "imagem",
+                    "imagem_url",
+                ),
+            },
+        ),
+        (
+            "Pedidos e estado",
+            {
+                "fields": ("aceita_pedidos", "ativo"),
+            },
+        ),
+    )
 
     def save_model(self, request, obj, form, change):
         outros_ativos = (
@@ -523,7 +630,7 @@ class EventoSambaAdmin(admin.ModelAdmin):
         if obj.ativo and outros_ativos:
             self.message_user(
                 request,
-                "Os outros eventos de samba foram desativados — só pode haver um ativo.",
+                "Os outros eventos «pedir música» foram desativados — só pode haver um ativo.",
                 level="success",
             )
 
@@ -537,14 +644,16 @@ class PedidoMusicaAdmin(admin.ModelAdmin):
         "evento",
         "tocado",
         "rejeitado",
+        "motivo_rejeicao",
         "tocado_em",
         "rejeitado_em",
         "marcado_por",
         "observacao_equipe",
         "criado_em",
     )
-    list_filter = ("tocado", "rejeitado", "evento")
+    list_filter = ("tocado", "rejeitado", "motivo_rejeicao", "evento")
     search_fields = ("musica", "pedido_por", "artista")
+    autocomplete_fields = ("motivo_rejeicao",)
     actions = ["marcar_como_tocados"]
 
     @admin.action(description="Marcar selecionados como já tocados")

@@ -1,0 +1,62 @@
+{% extends "home/base.html" %}
+
+{% block title %}Contato | Mesa Brasileira{% endblock %}
+{% block meta_description %}Entre em contacto com o Projeto Mesa Brasileira.{% endblock %}
+{% block main_class %}page-main{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container page-hero-inner reveal">
+    <p class="eyebrow">Fale connosco</p>
+    <h1>Contato</h1>
+    <p class="page-hero-lead">{{ config_home.contato_lead_exibir|linebreaksbr }}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container contato-layout reveal">
+    <div class="contato-info">
+      {% if contatos %}
+      <h2 class="contato-subtitle">Contactos</h2>
+      <ul class="contato-list contato-pessoas">
+        {% for contato in contatos %}
+        <li class="contato-item contato-pessoa">
+          <span class="contato-pessoa-nome">{{ contato.nome }}</span>
+          {% if contato.telefone_exibir %}
+          <a class="contato-pessoa-dado" href="tel:{{ contato.telefone_exibir|cut:' ' }}">{{ contato.telefone_exibir }}</a>
+          {% endif %}
+          {% if contato.email_exibir %}
+          <a class="contato-pessoa-dado" href="mailto:{{ contato.email_exibir }}">{{ contato.email_exibir }}</a>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      <h2 class="contato-subtitle{% if contatos %} contato-subtitle--spaced{% endif %}">Redes</h2>
+      <ul class="contato-list">
+        <li class="contato-item">
+          <span class="contato-label">Instagram</span>
+          <a href="{{ instagram_url }}" target="_blank" rel="noopener">{{ instagram_url }}</a>
+        </li>
+      </ul>
+    </div>
+
+    <form method="post" class="contato-form" novalidate>
+      {% csrf_token %}
+      <h2 class="contato-subtitle">Enviar mensagem</h2>
+      <p class="contato-form-lead">Preencha o formulário e receberemos a sua mensagem por email.</p>
+      {% for field in form %}
+      <div class="form-group">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+        <p class="form-hint error">{{ field.errors.0 }}</p>
+        {% endif %}
+      </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary btn-lg btn-block">Enviar mensagem</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

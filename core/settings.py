@@ -232,6 +232,9 @@ elif _email_host_user:
 else:
     DEFAULT_FROM_EMAIL = "Mesa Brasileira <noreply@mesabrasileira.pt>"
 
+# Destino das mensagens do formulário de contacto (/contato/).
+CONTATO_EMAIL = _env_strip("CONTATO_EMAIL")
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 

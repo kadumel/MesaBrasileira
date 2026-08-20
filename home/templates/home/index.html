@@ -129,16 +129,16 @@
   </div>
 </section>
 
-{% if patrocinadores %}
-<section class="section section-patrocinadores" id="patrocinadores">
+{% if parceiros %}
+<section class="section section-patrocinadores" id="parceiros">
   <div class="container">
     <header class="section-header reveal" style="text-align: center; margin-inline: auto;">
-      <p class="eyebrow">Parceiros</p>
-      <h2>Patrocinadores</h2>
+      <p class="eyebrow">Apoio</p>
+      <h2>Parceiros</h2>
       <p>Quem apoia a nossa roda e leva o samba mais longe.</p>
     </header>
     <ul class="patrocinadores-grid reveal-stagger">
-      {% for pat in patrocinadores %}
+      {% for pat in parceiros %}
       <li>
         {% if pat.site %}
         <a href="{{ pat.site }}" class="patrocinador-card" target="_blank" rel="noopener" title="{{ pat.nome }}">

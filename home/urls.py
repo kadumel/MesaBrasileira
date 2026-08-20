@@ -10,8 +10,12 @@ app_name = "home"
 
 urlpatterns = [
     path("", views.index, name="index"),
+    path("manifest.webmanifest", views.web_manifest, name="web_manifest"),
+    path("sw.js", views.service_worker, name="service_worker"),
     path("eventos/", views.eventos, name="eventos"),
     path("eventos/<int:pk>/", views.evento_detail, name="evento_detail"),
+    path("sobre/", views.sobre, name="sobre"),
+    path("contato/", views.contato, name="contato"),
     path("videos/", views.videos, name="videos"),
     path("videos/evento/<int:evento_pk>/", views.videos, name="videos_evento"),
     path("loja/", views.loja, name="loja"),

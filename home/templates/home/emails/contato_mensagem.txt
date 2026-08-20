@@ -1,0 +1,11 @@
+Nova mensagem pelo formulário de contacto — {{ site_nome }}
+
+Nome: {{ nome }}
+Email: {{ email }}
+Assunto: {{ assunto }}
+
+Mensagem:
+{{ mensagem }}
+
+---
+Responda directamente a este email para contactar {{ nome }}.

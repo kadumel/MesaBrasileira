@@ -9,6 +9,7 @@ Em vez disso, o Django faz `POST` para um **webhook n8n** com o HTML já montado
 N8N_WEBHOOK_URL=https://SEU-N8N/webhook/mesa-brasileira-email
 N8N_WEBHOOK_SECRET=uma-chave-secreta-opcional
 DEFAULT_FROM_EMAIL=Mesa Brasileira <seu@gmail.com>
+CONTATO_EMAIL=contacto@mesabrasileira.pt
 SITE_URL=https://mesabrasileira.pt
 ```
 

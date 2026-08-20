@@ -13,19 +13,22 @@
     </button>
     <ul class="nav-links">
       <li>
+        <a href="{% url 'home:pedir_musica' %}" class="{% if nav_active == 'pedidos' %}nav-active{% endif %}">Pedir música</a>
+      </li>
+      <li>
         <a href="{% url 'home:eventos' %}" class="{% if nav_active == 'eventos' %}nav-active{% endif %}">Eventos</a>
       </li>
       <li>
         <a href="{% url 'home:loja' %}" class="{% if nav_active == 'loja' %}nav-active{% endif %}">Loja</a>
       </li>
       <li>
-        <a href="{% url 'home:pedir_musica' %}" class="{% if nav_active == 'pedidos' %}nav-active{% endif %}">Pedir música</a>
+        <a href="{% url 'home:index' %}#parceiros" class="{% if nav_active == 'parceiros' %}nav-active{% endif %}">Parceiros</a>
       </li>
       <li>
-        <a href="{% url 'home:index' %}#patrocinadores" class="{% if nav_active == 'patrocinadores' %}nav-active{% endif %}">Patrocinadores</a>
+        <a href="{% url 'home:sobre' %}" class="{% if nav_active == 'sobre' %}nav-active{% endif %}">Sobre</a>
       </li>
       <li>
-        <a href="{% url 'home:videos' %}" class="{% if nav_active == 'videos' %}nav-active{% endif %}">Vídeos</a>
+        <a href="{% url 'home:contato' %}" class="{% if nav_active == 'contato' %}nav-active{% endif %}">Contato</a>
       </li>
       <li>
         <a href="{% url 'home:carrinho' %}" class="nav-cart {% if nav_active == 'loja' %}nav-active{% endif %}" aria-label="Carrinho{% if cart_count %} com {{ cart_count }} item{{ cart_count|pluralize:'s' }}{% endif %}">

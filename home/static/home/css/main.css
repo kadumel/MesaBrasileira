@@ -989,6 +989,15 @@ a:hover {
   opacity: 1;
 }
 
+.queue-item-note--motivo {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.65rem;
+  background: rgba(200, 90, 26, 0.08);
+  border-left: 3px solid var(--accent-hot);
+  border-radius: 0 8px 8px 0;
+  color: var(--brown);
+}
+
 .queue-item--done .queue-item-note--resposta {
   opacity: 1;
 }
@@ -1038,7 +1047,8 @@ a:hover {
   box-sizing: border-box;
 }
 
-.queue-equipe-actions .queue-resposta-input {
+.queue-equipe-actions .queue-resposta-input,
+.queue-equipe-actions .queue-motivo-select {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -1815,7 +1825,7 @@ a:hover {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
-/* Patrocinadores */
+/* Parceiros */
 .section-patrocinadores {
   background: var(--bg-card);
   border-block: 2px solid var(--border);
@@ -1898,7 +1908,21 @@ a.patrocinador-card:hover {
 }
 
 .page-hero--compact {
-  padding: 1.5rem 0;
+  padding: 1.25rem 0 0.5rem;
+}
+
+.page-hero--sobre {
+  padding-bottom: 0.25rem;
+  border-bottom: none;
+}
+
+.section-sobre {
+  padding-top: 1rem;
+  padding-bottom: 4rem;
+}
+
+.section-sobre .sobre-topico--intro {
+  margin-bottom: -0.5rem;
 }
 
 .page-hero h1 {
@@ -1912,6 +1936,136 @@ a.patrocinador-card:hover {
   color: var(--text-muted);
   max-width: 36rem;
   margin: 0.75rem 0 0;
+}
+
+.page-body {
+  max-width: 42rem;
+  font-size: 1.02rem;
+  line-height: 1.7;
+  color: var(--brown);
+}
+
+.sobre-topicos {
+  max-width: 44rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.sobre-topico--intro .sobre-topico-conteudo {
+  font-size: 1.12rem;
+  font-weight: 500;
+  color: var(--brown-deep);
+}
+
+.sobre-topico-titulo {
+  font-family: var(--font-display);
+  font-size: clamp(1.65rem, 4vw, 2.15rem);
+  letter-spacing: 0.03em;
+  margin: 0 0 1rem;
+  color: var(--brown);
+  line-height: 1.15;
+}
+
+.sobre-topico-conteudo {
+  font-size: 1.02rem;
+  line-height: 1.75;
+  color: var(--brown);
+}
+
+.sobre-topico-conteudo p {
+  margin: 0 0 0.85rem;
+}
+
+.sobre-topico-conteudo p:last-child {
+  margin-bottom: 0;
+}
+
+.sobre-topico-conteudo strong {
+  color: var(--brown-deep);
+}
+
+.contato-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.contato-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(280px, 1.35fr);
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.contato-subtitle {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--brown-deep);
+}
+
+.contato-subtitle--spaced {
+  margin-top: 2rem;
+}
+
+.contato-pessoa-nome {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--brown-deep);
+}
+
+.contato-pessoa-dado {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--green);
+  word-break: break-word;
+}
+
+.contato-pessoa-dado:hover {
+  color: var(--brown-deep);
+}
+
+.contato-form-lead {
+  margin: -0.35rem 0 1.25rem;
+  font-size: 0.95rem;
+  color: var(--brown-muted);
+  line-height: 1.5;
+}
+
+.contato-form {
+  padding: 1.75rem;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.contato-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.contato-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--brown-muted);
+}
+
+.contato-item a {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--green);
+  word-break: break-word;
+}
+
+.contato-item a:hover {
+  color: var(--brown-deep);
 }
 
 .section-header--row {
@@ -2396,6 +2550,10 @@ a.patrocinador-card:hover {
   }
 
   .checkout-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .contato-layout {
     grid-template-columns: 1fr;
   }
 

@@ -1,0 +1,32 @@
+{
+  "name": "MB.pt",
+  "short_name": "MB.pt",
+  "description": "Projeto Mesa Brasileira — samba, roda e comunidade.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#e6d5b8",
+  "theme_color": "#4b3621",
+  "lang": "pt",
+  "icons": [
+    {
+      "src": "/static/home/img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/home/img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/home/img/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 
-from .models import Pedido, PedidoMusica, Produto, TamanhoProduto
+from .models import Pedido, PedidoMusica, Produto, TamanhoProduto, MotivoRejeicao
 
 
 class EquipeLoginForm(AuthenticationForm):
@@ -153,6 +153,40 @@ class CheckoutEntregaForm(forms.Form):
         return cleaned
 
 
+class ContatoForm(forms.Form):
+    nome = forms.CharField(
+        max_length=120,
+        label="Nome",
+        widget=forms.TextInput(
+            attrs={"class": "form-input", "autocomplete": "name", "placeholder": "O seu nome"}
+        ),
+    )
+    email = forms.EmailField(
+        label="Email",
+        widget=forms.EmailInput(
+            attrs={"class": "form-input", "autocomplete": "email", "placeholder": "seu@email.com"}
+        ),
+    )
+    assunto = forms.CharField(
+        max_length=200,
+        label="Assunto",
+        widget=forms.TextInput(
+            attrs={"class": "form-input", "placeholder": "Assunto da mensagem"}
+        ),
+    )
+    mensagem = forms.CharField(
+        max_length=3000,
+        label="Mensagem",
+        widget=forms.Textarea(
+            attrs={
+                "class": "form-input",
+                "rows": 6,
+                "placeholder": "Escreva a sua mensagem…",
+            }
+        ),
+    )
+
+
 class CheckoutPagamentoForm(forms.Form):
     metodo_pagamento = forms.ChoiceField(
         choices=Pedido.METODOS_PAGAMENTO,
@@ -199,24 +233,36 @@ class MarcarPedidoTocadoForm(forms.Form):
 
 
 class RejeitarPedidoMusicaForm(forms.Form):
+    motivo_rejeicao = forms.ModelChoiceField(
+        queryset=MotivoRejeicao.objects.none(),
+        label="Motivo da rejeição",
+        empty_label="Escolha o motivo",
+        widget=forms.Select(attrs={"class": "form-input form-input--sm queue-motivo-select"}),
+    )
     observacao_equipe = forms.CharField(
         required=True,
         max_length=300,
-        label="Motivo da rejeição",
+        label="Resposta da mesa",
         widget=forms.TextInput(
             attrs={
                 "class": "form-input form-input--sm",
-                "placeholder": "Motivo visível na fila (obrigatório)",
+                "placeholder": "Resposta da mesa (obrigatória)",
                 "maxlength": "300",
                 "required": "required",
             }
         ),
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["motivo_rejeicao"].queryset = MotivoRejeicao.objects.filter(
+            ativo=True
+        )
+
     def clean_observacao_equipe(self):
         valor = (self.cleaned_data.get("observacao_equipe") or "").strip()
         if not valor:
             raise forms.ValidationError(
-                "Indique o motivo da rejeição — a resposta é obrigatória."
+                "Indique a resposta da mesa — é obrigatória ao rejeitar."
             )
         return valor[:300]

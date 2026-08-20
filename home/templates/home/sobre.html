@@ -1,0 +1,28 @@
+{% extends "home/base.html" %}
+
+{% block title %}Sobre | Mesa Brasileira{% endblock %}
+{% block meta_description %}Conheça o Projeto Mesa Brasileira — samba, roda e comunidade.{% endblock %}
+{% block main_class %}page-main{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--compact page-hero--sobre">
+  <div class="container page-hero-inner reveal">
+    <h1>Sobre</h1>
+  </div>
+</section>
+
+<section class="section section-sobre">
+  <div class="container">
+    <div class="sobre-topicos reveal-stagger">
+      {% for topico in sobre_pagina.topicos_exibir %}
+      <article class="sobre-topico{% if topico.intro %} sobre-topico--intro{% endif %}">
+        {% if topico.titulo %}
+        <h2 class="sobre-topico-titulo">{{ topico.titulo }}</h2>
+        {% endif %}
+        <div class="sobre-topico-conteudo">{{ topico.conteudo|linebreaksbr }}</div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

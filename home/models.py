@@ -28,6 +28,15 @@ class EventoDestaque(models.Model):
         max_length=URL_MAX_LENGTH,
         blank=True,
     )
+    instagram_videos_url = models.URLField(
+        max_length=URL_MAX_LENGTH,
+        blank=True,
+        verbose_name="Instagram (vídeos do evento)",
+        help_text=(
+            "Caminho/link do Instagram onde estão os vídeos deste evento "
+            "(ex.: destaque, álbum ou publicação)."
+        ),
+    )
     ordem = models.PositiveIntegerField(default=0)
     destaque = models.BooleanField(
         default=True,
@@ -49,6 +58,10 @@ class EventoDestaque(models.Model):
         if self.imagem:
             return self.imagem.url
         return self.imagem_url or ""
+
+    @property
+    def instagram_videos_exibir(self):
+        return (self.instagram_videos_url or "").strip()
 
 
 class SlideHome(models.Model):
@@ -126,15 +139,15 @@ class Patrocinador(models.Model):
     site = models.URLField(
         max_length=URL_MAX_LENGTH,
         blank=True,
-        help_text="Site ou rede social do patrocinador.",
+        help_text="Site ou rede social do parceiro.",
     )
     ordem = models.PositiveIntegerField(default=0)
     ativo = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["ordem", "nome"]
-        verbose_name = "Patrocinador"
-        verbose_name_plural = "Patrocinadores"
+        verbose_name = "Parceiro"
+        verbose_name_plural = "Parceiros"
 
     def __str__(self):
         return self.nome
@@ -482,8 +495,8 @@ class EventoSamba(models.Model):
 
     class Meta:
         ordering = ["-data"]
-        verbose_name = "Evento de samba"
-        verbose_name_plural = "Eventos de samba"
+        verbose_name = "Evento pedir música"
+        verbose_name_plural = "Eventos pedir música"
 
     def __str__(self):
         return f"{self.titulo} — {self.data:%d/%m/%Y}"
@@ -507,6 +520,22 @@ class EventoSamba(models.Model):
         return self.ativo and self.data <= agora and self.aceita_pedidos
 
 
+class MotivoRejeicao(models.Model):
+    """Motivos predefinidos para rejeitar um pedido de música."""
+
+    nome = models.CharField(max_length=120, verbose_name="Motivo")
+    ordem = models.PositiveIntegerField(default=0, verbose_name="Ordem")
+    ativo = models.BooleanField(default=True, verbose_name="Ativo")
+
+    class Meta:
+        ordering = ["ordem", "nome"]
+        verbose_name = "Motivo de rejeição"
+        verbose_name_plural = "Motivos de rejeição"
+
+    def __str__(self):
+        return self.nome
+
+
 class PedidoMusica(models.Model):
     evento = models.ForeignKey(
         EventoSamba,
@@ -522,6 +551,14 @@ class PedidoMusica(models.Model):
         blank=True,
         verbose_name="Resposta da mesa",
         help_text="Mensagem visível na fila para quem pediu (ex.: já tocamos antes).",
+    )
+    motivo_rejeicao = models.ForeignKey(
+        MotivoRejeicao,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="pedidos",
+        verbose_name="Motivo da rejeição",
     )
     tocado = models.BooleanField(default=False, verbose_name="Já tocámos")
     rejeitado = models.BooleanField(
@@ -591,6 +628,12 @@ class PedidoMusica(models.Model):
         nome = (user.get_full_name() or "").strip()
         return nome or user.get_username()
 
+    @property
+    def motivo_rejeicao_exibir(self):
+        if self.motivo_rejeicao_id and self.motivo_rejeicao:
+            return self.motivo_rejeicao.nome
+        return ""
+
     def marcar_tocado(self, observacao_equipe=None, user=None):
         if not self.em_fila:
             return
@@ -604,18 +647,22 @@ class PedidoMusica(models.Model):
             update_fields.append("observacao_equipe")
         self.save(update_fields=update_fields)
 
-    def marcar_rejeitado(self, observacao_equipe, user=None):
+    def marcar_rejeitado(self, observacao_equipe, motivo_rejeicao, user=None):
         if not self.em_fila:
             return
+        if motivo_rejeicao is None:
+            raise ValueError("Seleccione o motivo da rejeição.")
         obs = (observacao_equipe or "").strip()
         if not obs:
             raise ValueError("A resposta da mesa é obrigatória ao rejeitar um pedido.")
         self.rejeitado = True
         self.rejeitado_em = timezone.now()
+        self.motivo_rejeicao = motivo_rejeicao
         self.observacao_equipe = obs[:300]
         update_fields = [
             "rejeitado",
             "rejeitado_em",
+            "motivo_rejeicao",
             "observacao_equipe",
             "marcado_por",
             "atualizado_em",
@@ -694,6 +741,130 @@ class VideoEvento(models.Model):
         if self.precisa_buscar_miniatura():
             self.atualizar_miniatura_instagram()
         super().save(*args, **kwargs)
+
+
+class SobrePagina(models.Model):
+    """Textos da página «Sobre» (singleton)."""
+
+    subtitulo = models.TextField(
+        blank=True,
+        verbose_name="Introdução",
+        help_text="Texto introdutório da página (primeira secção). Deixe linha em branco entre parágrafos.",
+    )
+    texto_samba_na_rua = models.TextField(
+        blank=True,
+        verbose_name="Samba na rua, do jeito que tem que ser.",
+        help_text="Texto desta secção. Deixe linha em branco entre parágrafos.",
+    )
+    texto_nossa_essencia = models.TextField(
+        blank=True,
+        verbose_name="Nossa essência",
+        help_text="Texto desta secção. Deixe linha em branco entre parágrafos.",
+    )
+    texto_ponto_encontro = models.TextField(
+        blank=True,
+        verbose_name="O samba é o nosso ponto de encontro",
+        help_text="Texto desta secção. Deixe linha em branco entre parágrafos.",
+    )
+    texto_mais_que_musica = models.TextField(
+        blank=True,
+        verbose_name="Mais que música",
+        help_text="Texto desta secção. Deixe linha em branco entre parágrafos.",
+    )
+
+    TOPICOS = (
+        ("Samba na rua, do jeito que tem que ser.", "texto_samba_na_rua"),
+        ("Nossa essência", "texto_nossa_essencia"),
+        ("O samba é o nosso ponto de encontro", "texto_ponto_encontro"),
+        ("Mais que música", "texto_mais_que_musica"),
+    )
+
+    TEXTO_PADRAO_SUBTITULO = "Em respeito ao nosso samba."
+
+    TEXTO_PADRAO_SAMBA_NA_RUA = (
+        "O nosso projeto nasceu da vontade de fazer aquilo que o samba sempre soube fazer: "
+        "juntar pessoas.\n\n"
+        "Mais do que uma apresentação musical, queremos criar encontros. Levar o samba para a "
+        "rua, aproximar músicos e público e transformar cada roda num espaço de alegria, amizade, "
+        "cultura e celebração."
+    )
+    TEXTO_PADRAO_NOSSA_ESSENCIA = (
+        "Acreditamos no samba feito perto das pessoas.\n\n"
+        "Sem distância entre quem toca e quem canta. Aqui, o público também faz parte da roda: "
+        "canta, bate palma, dança e ajuda a construir a energia de cada encontro.\n\n"
+        "Cavaquinho, banjo, pandeiro, surdo, tantan, repique, reco-reco e muitas vozes se "
+        "encontram para manter viva uma das maiores expressões da cultura popular brasileira."
+    )
+    TEXTO_PADRAO_PONTO_ENCONTRO = (
+        "Nosso repertório passeia por diferentes gerações do samba, celebrando grandes "
+        "compositores e intérpretes e mantendo espaço para novas histórias e novas músicas.\n\n"
+        "Do partido-alto ao samba de roda, dos clássicos que todo mundo conhece às músicas que "
+        "merecem ser redescobertas, queremos preservar a essência sem deixar o samba parar no tempo."
+    )
+    TEXTO_PADRAO_MAIS_QUE_MUSICA = (
+        "Para nós, samba é encontro.\n\n"
+        "É chegar sem conhecer ninguém e terminar cantando junto.\n\n"
+        "É a palma da mão marcando o ritmo.\n\n"
+        "É a mesa cercada de amigos.\n\n"
+        "É a rua virando palco.\n\n"
+        "É aquele refrão que começa com poucos e, quando percebemos, todo mundo está cantando.\n\n"
+        "É isso que queremos construir a cada roda.\n\n"
+        "Enquanto houver gente para cantar, haverá samba para acontecer.\n\n"
+        "Vem pra roda."
+    )
+
+    class Meta:
+        verbose_name = "Página Sobre"
+        verbose_name_plural = "Página Sobre"
+
+    def __str__(self):
+        return "Página Sobre"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        return
+
+    @classmethod
+    def get_solo(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    @property
+    def subtitulo_exibir(self):
+        texto = (self.subtitulo or "").strip()
+        return texto or self.TEXTO_PADRAO_SUBTITULO
+
+    def _texto_topico(self, field_name, padrao):
+        valor = (getattr(self, field_name) or "").strip()
+        return valor or padrao
+
+    @property
+    def topicos_exibir(self):
+        padroes = {
+            "texto_samba_na_rua": self.TEXTO_PADRAO_SAMBA_NA_RUA,
+            "texto_nossa_essencia": self.TEXTO_PADRAO_NOSSA_ESSENCIA,
+            "texto_ponto_encontro": self.TEXTO_PADRAO_PONTO_ENCONTRO,
+            "texto_mais_que_musica": self.TEXTO_PADRAO_MAIS_QUE_MUSICA,
+        }
+        topicos = [
+            {
+                "titulo": "",
+                "conteudo": self.subtitulo_exibir,
+                "intro": True,
+            }
+        ]
+        topicos.extend(
+            {
+                "titulo": titulo,
+                "conteudo": self._texto_topico(campo, padroes[campo]),
+                "intro": False,
+            }
+            for titulo, campo in self.TOPICOS
+        )
+        return topicos
 
 
 class ConfiguracaoHome(models.Model):
@@ -785,6 +956,19 @@ class ConfiguracaoHome(models.Model):
             "Deixe vazio para usar o texto predefinido."
         ),
     )
+    contato_descricao = models.TextField(
+        blank=True,
+        verbose_name="Introdução da página «Contato»",
+        help_text="Texto abaixo do título em /contato/. Deixe vazio para usar o texto predefinido.",
+    )
+    contato_email = models.EmailField(
+        blank=True,
+        verbose_name="Email de contacto",
+        help_text=(
+            "Destino das mensagens enviadas pelo formulário da página «Contato». "
+            "Se vazio, usa a variável de ambiente CONTATO_EMAIL."
+        ),
+    )
     loja_mbway_telefone = models.CharField(
         max_length=30,
         blank=True,
@@ -805,6 +989,9 @@ class ConfiguracaoHome(models.Model):
     TEXTO_PADRAO_VIDEOS = (
         "Escolha um evento para ver os vídeos publicados no Instagram. Os marcados como destaque "
         "também aparecem na página inicial."
+    )
+    TEXTO_PADRAO_CONTATO = (
+        "Fale connosco para parcerias, eventos ou qualquer questão sobre o projeto."
     )
 
     class Meta:
@@ -869,6 +1056,11 @@ class ConfiguracaoHome(models.Model):
         return texto or self.TEXTO_PADRAO_VIDEOS
 
     @property
+    def contato_lead_exibir(self):
+        texto = (self.contato_descricao or "").strip()
+        return texto or self.TEXTO_PADRAO_CONTATO
+
+    @property
     def mbway_telefone_exibir(self):
         return (self.loja_mbway_telefone or "").strip()
 
@@ -928,3 +1120,36 @@ class ConfiguracaoHome(models.Model):
         if name.endswith(".mov"):
             return "video/quicktime"
         return "video/mp4"
+
+
+class Contato(models.Model):
+    """Contacto cadastrado (nome, telefone, email) — página «Contato»."""
+
+    nome = models.CharField(max_length=120, verbose_name="Nome")
+    telefone = models.CharField(
+        max_length=40,
+        blank=True,
+        verbose_name="Telefone",
+    )
+    email = models.EmailField(
+        blank=True,
+        verbose_name="Email",
+    )
+    ordem = models.PositiveIntegerField(default=0, verbose_name="Ordem")
+    ativo = models.BooleanField(default=True, verbose_name="Ativo")
+
+    class Meta:
+        ordering = ["ordem", "nome"]
+        verbose_name = "Contacto"
+        verbose_name_plural = "Contactos"
+
+    def __str__(self):
+        return self.nome
+
+    @property
+    def telefone_exibir(self):
+        return (self.telefone or "").strip()
+
+    @property
+    def email_exibir(self):
+        return (self.email or "").strip()

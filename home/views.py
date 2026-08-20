@@ -1,30 +1,37 @@
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Q
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import FileResponse, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
+from django.views.decorators.cache import cache_control
 from django.views.decorators.http import require_GET, require_POST
 
 from .constants import INSTAGRAM_URL
 from .cart import cart_count
 from .forms import (
     AdicionarCarrinhoForm,
+    ContatoForm,
     MarcarPedidoTocadoForm,
     PedidoMusicaForm,
     RejeitarPedidoMusicaForm,
 )
 from .models import (
     ConfiguracaoHome,
+    Contato,
     EventoDestaque,
     EventoSamba,
+    MotivoRejeicao,
     Patrocinador,
     PedidoMusica,
     Produto,
     SlideHome,
+    SobrePagina,
     VideoEvento,
 )
+from .services.contato_email import enviar_mensagem_contato
 
 EQUIPE_GROUP_NAME = getattr(settings, "MESA_BRASILEIRA_EQUIPE_GROUP_NAME", "Equipe")
 
@@ -43,6 +50,8 @@ def _pedido_fila_json(pedido: PedidoMusica) -> dict:
         "pedido_por": pedido.pedido_por,
         "mensagem": pedido.mensagem,
         "observacao_equipe": pedido.observacao_equipe,
+        "motivo_rejeicao": pedido.motivo_rejeicao_id,
+        "motivo_rejeicao_exibir": pedido.motivo_rejeicao_exibir,
         "marcado_por_exibir": pedido.marcado_por_exibir,
         "tocado": pedido.tocado,
         "rejeitado": pedido.rejeitado,
@@ -81,13 +90,14 @@ def _evento_pedidos_context():
     form = None
     if evento_samba:
         pedidos = PedidoMusica.ordenar_para_fila(
-            evento_samba.pedidos.select_related("marcado_por")
+            evento_samba.pedidos.select_related("marcado_por", "motivo_rejeicao")
         )[:50]
         form = PedidoMusicaForm()
     return {
         "evento_samba": evento_samba,
         "pedidos": pedidos,
         "form_pedido": form,
+        "motivos_rejeicao": MotivoRejeicao.objects.filter(ativo=True),
         **_fila_limite_context(evento_samba),
     }
 
@@ -97,7 +107,7 @@ def index(request):
     context = {
         "config_home": ConfiguracaoHome.get_solo(),
         "slides_home": SlideHome.objects.filter(ativo=True).select_related("evento"),
-        "patrocinadores": Patrocinador.objects.filter(ativo=True),
+        "parceiros": Patrocinador.objects.filter(ativo=True),
         "eventos_destaque": EventoDestaque.objects.filter(ativo=True, destaque=True)[:6],
         "produtos": produtos_qs[:6],
         "total_produtos": produtos_qs.count(),
@@ -107,6 +117,35 @@ def index(request):
         "nav_active": "home",
     }
     return render(request, "home/index.html", context)
+
+
+@require_GET
+@cache_control(max_age=86400, public=True)
+def web_manifest(request):
+    """Manifest PWA — nome MB.pt."""
+    from django.contrib.staticfiles.finders import find
+
+    path = find("home/manifest.webmanifest")
+    if not path:
+        return HttpResponse(status=404)
+    return FileResponse(
+        open(path, "rb"),
+        content_type="application/manifest+json",
+    )
+
+
+@require_GET
+@cache_control(no_cache=True, must_revalidate=True)
+def service_worker(request):
+    """Service worker na raiz para scope «/»."""
+    from django.contrib.staticfiles.finders import find
+
+    path = find("home/js/sw.js")
+    if not path:
+        return HttpResponse(status=404)
+    response = FileResponse(open(path, "rb"), content_type="application/javascript")
+    response["Service-Worker-Allowed"] = "/"
+    return response
 
 
 def pedir_musica(request):
@@ -134,6 +173,42 @@ def evento_detail(request, pk):
         "nav_active": "eventos",
     }
     return render(request, "home/evento_detail.html", context)
+
+
+def sobre(request):
+    context = {
+        "sobre_pagina": SobrePagina.get_solo(),
+        "nav_active": "sobre",
+    }
+    return render(request, "home/sobre.html", context)
+
+
+def contato(request):
+    config = ConfiguracaoHome.get_solo()
+    form = ContatoForm()
+
+    if request.method == "POST":
+        form = ContatoForm(request.POST)
+        if form.is_valid():
+            ok, erro = enviar_mensagem_contato(form.cleaned_data, config)
+            if ok:
+                messages.success(
+                    request,
+                    "Mensagem enviada com sucesso. Responderemos em breve.",
+                )
+                return HttpResponseRedirect(reverse("home:contato"))
+            messages.error(
+                request,
+                "Não foi possível enviar a mensagem. Tente novamente mais tarde.",
+            )
+
+    context = {
+        "config_home": config,
+        "contatos": Contato.objects.filter(ativo=True),
+        "form": form,
+        "nav_active": "contato",
+    }
+    return render(request, "home/contato.html", context)
 
 
 def _eventos_com_videos_queryset():
@@ -309,6 +384,7 @@ def marcar_pedido_rejeitado(request, pk):
     try:
         pedido.marcar_rejeitado(
             form.cleaned_data["observacao_equipe"],
+            form.cleaned_data["motivo_rejeicao"],
             user=request.user,
         )
     except ValueError as exc:
@@ -336,7 +412,7 @@ def fila_pedidos_json(request, evento_id):
     limite = config.limite_pedidos_em_fila
     total_em_fila = _contagem_em_fila(evento)
     pedidos = PedidoMusica.ordenar_para_fila(
-        evento.pedidos.select_related("marcado_por")
+        evento.pedidos.select_related("marcado_por", "motivo_rejeicao")
     )[:50]
     data = [_pedido_fila_json(p) for p in pedidos]
     response = JsonResponse(
