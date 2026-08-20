@@ -844,6 +844,55 @@ a:hover {
   color: var(--text-muted);
 }
 
+.push-equipe {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin: 0 0 1.25rem;
+  padding: 0.85rem 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.push-equipe[hidden] {
+  display: none;
+}
+
+.push-equipe[data-estado="ativo"] {
+  background: var(--green-glow);
+  border-color: var(--green);
+}
+
+.push-equipe-copy {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+
+.push-equipe-copy strong {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--brown);
+}
+
+.push-equipe-copy p {
+  margin: 0.2rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.push-equipe .btn {
+  flex: 0 0 auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .push-equipe {
+    transition: none;
+  }
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

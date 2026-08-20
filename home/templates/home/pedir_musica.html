@@ -1,4 +1,5 @@
 {% extends "home/base.html" %}
+{% load static %}
 
 {% block title %}Pedir música | Mesa Brasileira{% endblock %}
 {% block meta_description %}Peça a sua música na roda do Projeto Mesa Brasileira e acompanhe a fila ao vivo.{% endblock %}
@@ -20,8 +21,33 @@
       <a href="{% url 'home:login' %}?next={{ request.path|urlencode }}">Inicie sessão</a>
       para marcar músicas como tocadas e registar observações.
     </p>
+    {% elif vapid_public_key %}
+    <aside
+      class="push-equipe"
+      id="push-equipe"
+      hidden
+      data-vapid="{{ vapid_public_key }}"
+      data-subscribe-url="{% url 'home:push_inscrever' %}"
+      data-unsubscribe-url="{% url 'home:push_desinscrever' %}"
+    >
+      <div class="push-equipe-copy">
+        <strong>Avisos no telemóvel</strong>
+        <p id="push-equipe-texto">
+          Receba o nome da música e o artista quando alguém pedir na roda.
+        </p>
+      </div>
+      <button type="button" class="btn btn-outline btn-sm" id="push-equipe-btn">
+        Ativar avisos
+      </button>
+    </aside>
     {% endif %}
     {% include "home/includes/pedidos_roda.html" %}
   </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+{% if vapid_public_key %}
+<script src="{% static 'home/js/push-equipe.js' %}?v=1"></script>
+{% endif %}
 {% endblock %}

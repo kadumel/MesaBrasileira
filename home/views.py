@@ -1,7 +1,10 @@
+import json
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.db.models import Count, Q
 from django.http import FileResponse, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
@@ -19,10 +22,12 @@ from .forms import (
     RejeitarPedidoMusicaForm,
 )
 from .models import (
+    URL_MAX_LENGTH,
     ConfiguracaoHome,
     Contato,
     EventoDestaque,
     EventoSamba,
+    InscricaoPush,
     MotivoRejeicao,
     Patrocinador,
     PedidoMusica,
@@ -32,6 +37,7 @@ from .models import (
     VideoEvento,
 )
 from .services.contato_email import enviar_mensagem_contato
+from .services.pedido_push import notificar_novo_pedido, vapid_public_key
 
 EQUIPE_GROUP_NAME = getattr(settings, "MESA_BRASILEIRA_EQUIPE_GROUP_NAME", "Equipe")
 
@@ -111,9 +117,6 @@ def index(request):
         "eventos_destaque": EventoDestaque.objects.filter(ativo=True, destaque=True)[:6],
         "produtos": produtos_qs[:6],
         "total_produtos": produtos_qs.count(),
-        "videos": VideoEvento.objects.filter(ativo=True, destaque=True).select_related(
-            "evento"
-        ),
         "nav_active": "home",
     }
     return render(request, "home/index.html", context)
@@ -149,9 +152,11 @@ def service_worker(request):
 
 
 def pedir_musica(request):
+    pode_marcar = user_pode_marcar(request.user)
     context = {
         **_evento_pedidos_context(),
-        "pode_marcar": user_pode_marcar(request.user),
+        "pode_marcar": pode_marcar,
+        "vapid_public_key": vapid_public_key() if pode_marcar else "",
         "nav_active": "pedidos",
     }
     return render(request, "home/pedir_musica.html", context)
@@ -316,6 +321,13 @@ def pedido_musica(request):
         pedido = form.save(commit=False)
         pedido.evento = evento
         pedido.save()
+        transaction.on_commit(
+            lambda musica=pedido.musica, artista=pedido.artista, pk=pedido.pk: notificar_novo_pedido(
+                musica=musica,
+                artista=artista,
+                pedido_id=pk,
+            )
+        )
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse(
                 {
@@ -427,3 +439,62 @@ def fila_pedidos_json(request, evento_id):
     response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response["Pragma"] = "no-cache"
     return response
+
+
+def _payload_inscricao_push(request):
+    try:
+        data = json.loads(request.body.decode("utf-8") or "{}")
+    except json.JSONDecodeError:
+        return None
+    endpoint = (data.get("endpoint") or "").strip()
+    keys = data.get("keys") or {}
+    p256dh = (keys.get("p256dh") or "").strip()
+    auth = (keys.get("auth") or "").strip()
+    if not endpoint or not p256dh or not auth:
+        return None
+    return {
+        "endpoint": endpoint[:URL_MAX_LENGTH],
+        "p256dh": p256dh[:200],
+        "auth": auth[:200],
+        "user_agent": (request.META.get("HTTP_USER_AGENT") or "")[:300],
+    }
+
+
+@require_POST
+@login_required
+def push_inscrever(request):
+    if not user_pode_marcar(request.user):
+        raise PermissionDenied
+    payload = _payload_inscricao_push(request)
+    if not payload:
+        return JsonResponse({"ok": False, "error": "Subscrição inválida."}, status=400)
+    InscricaoPush.objects.update_or_create(
+        endpoint=payload["endpoint"],
+        defaults={
+            "user": request.user,
+            "p256dh": payload["p256dh"],
+            "auth": payload["auth"],
+            "user_agent": payload["user_agent"],
+        },
+    )
+    return JsonResponse({"ok": True})
+
+
+@require_POST
+@login_required
+def push_desinscrever(request):
+    if not user_pode_marcar(request.user):
+        raise PermissionDenied
+    payload = _payload_inscricao_push(request)
+    endpoint = (payload or {}).get("endpoint") or ""
+    if not endpoint:
+        try:
+            data = json.loads(request.body.decode("utf-8") or "{}")
+        except json.JSONDecodeError:
+            data = {}
+        endpoint = (data.get("endpoint") or "").strip()
+    if endpoint:
+        InscricaoPush.objects.filter(endpoint=endpoint, user=request.user).delete()
+    else:
+        InscricaoPush.objects.filter(user=request.user).delete()
+    return JsonResponse({"ok": True})

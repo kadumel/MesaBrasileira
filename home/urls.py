@@ -70,6 +70,8 @@ urlpatterns = [
         name="marcar_pedido_rejeitado",
     ),
     path("api/fila/<int:evento_id>/", views.fila_pedidos_json, name="fila_pedidos"),
+    path("api/push/inscrever/", views.push_inscrever, name="push_inscrever"),
+    path("api/push/desinscrever/", views.push_desinscrever, name="push_desinscrever"),
     path(
         "accounts/login/",
         LoginView.as_view(

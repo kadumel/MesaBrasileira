@@ -235,6 +235,12 @@ else:
 # Destino das mensagens do formulário de contacto (/contato/).
 CONTATO_EMAIL = _env_strip("CONTATO_EMAIL")
 
+# Web Push (PWA) — avisos de novos pedidos de música para a equipa.
+# Se vazio, as chaves são geradas e guardadas na base de dados.
+VAPID_PUBLIC_KEY = _env_strip("VAPID_PUBLIC_KEY")
+VAPID_PRIVATE_KEY = _env_strip("VAPID_PRIVATE_KEY")
+VAPID_ADMIN_EMAIL = _env_strip("VAPID_ADMIN_EMAIL")
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 

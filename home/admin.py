@@ -7,6 +7,7 @@ from .models import (
     Contato,
     EventoDestaque,
     EventoSamba,
+    InscricaoPush,
     ItemPedido,
     MotivoRejeicao,
     Patrocinador,
@@ -680,6 +681,28 @@ class PedidoMusicaAdmin(admin.ModelAdmin):
     def marcar_como_tocados(self, request, queryset):
         for pedido in queryset.filter(tocado=False, rejeitado=False):
             pedido.marcar_tocado(user=request.user)
+
+
+@admin.register(InscricaoPush)
+class InscricaoPushAdmin(admin.ModelAdmin):
+    list_display = ("user", "endpoint_curto", "atualizado_em", "criado_em")
+    list_filter = ("user",)
+    search_fields = ("user__username", "endpoint")
+    readonly_fields = (
+        "user",
+        "endpoint",
+        "p256dh",
+        "auth",
+        "user_agent",
+        "criado_em",
+        "atualizado_em",
+    )
+
+    @admin.display(description="Endpoint")
+    def endpoint_curto(self, obj):
+        if len(obj.endpoint) <= 64:
+            return obj.endpoint
+        return f"{obj.endpoint[:64]}…"
 
 
 @admin.register(VideoEvento)

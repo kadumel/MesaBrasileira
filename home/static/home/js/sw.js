@@ -1,5 +1,5 @@
 /* Service worker — MB.pt (Mesa Brasileira PWA) */
-const CACHE_NAME = "mb-pt-v1";
+const CACHE_NAME = "mb-pt-v2";
 const PRECACHE = [
   "/",
   "/static/home/css/main.css",
@@ -62,4 +62,47 @@ self.addEventListener("fetch", (event) => {
       )
     );
   }
+});
+
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch (_) {
+    data = { body: event.data ? event.data.text() : "" };
+  }
+
+  const title = data.title || "Pedido de música";
+  const options = {
+    body: data.body || "Entrou um pedido na fila da roda.",
+    icon: "/static/home/img/icon-192.png",
+    badge: "/static/home/img/icon-192.png",
+    lang: "pt",
+    vibrate: [180, 80, 180],
+    tag: data.tag || "pedido-musica",
+    renotify: true,
+    data: {
+      url: data.url || "/pedir-musica/",
+    },
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || "/pedir-musica/";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.includes("/pedir-musica") && "focus" in client) {
+          return client.focus();
+        }
+      }
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(target);
+      }
+      return undefined;
+    })
+  );
 });

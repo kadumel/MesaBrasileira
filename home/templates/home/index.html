@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}Mesa Brasileira | Samba &amp; Comunidade{% endblock %}
-{% block meta_description %}Projeto Mesa Brasileira — samba, roda e comunidade. Eventos e vídeos dos nossos encontros.{% endblock %}
+{% block meta_description %}Projeto Mesa Brasileira — samba, roda e comunidade. Eventos e encontros da nossa roda.{% endblock %}
 {% block main_class %}home-main{% endblock %}
 
 {% block extra_css %}
@@ -100,37 +100,6 @@
   </div>
 </section>
 {% endif %}
-
-<section class="section section-videos" id="videos">
-  <div class="container">
-    <header class="section-header section-header--row reveal">
-      <div>
-        <p class="eyebrow">Memórias</p>
-        <h2>Vídeos dos eventos</h2>
-        <p>Destaques da roda no Instagram.</p>
-      </div>
-      <a href="{% url 'home:videos' %}" class="btn btn-outline btn-sm">Ver todos</a>
-    </header>
-
-    {% if videos %}
-    <div class="video-grid reveal-stagger">
-      {% for video in videos %}
-      <div>{% include "home/includes/video_card.html" with video=video show_evento_label=True use_tilt=True %}</div>
-      {% endfor %}
-    </div>
-    {% else %}
-    <p class="empty-state reveal">
-      Marque vídeos como destaque no admin ou <a href="{% url 'home:videos' %}">veja todos os vídeos</a>.
-    </p>
-    {% endif %}
-
-    <div class="instagram-cta reveal">
-      <a href="{{ instagram_url }}" class="btn btn-outline btn-lg" target="_blank" rel="noopener">
-        Seguir @mesabrasileirapt no Instagram
-      </a>
-    </div>
-  </div>
-</section>
 
 {% if parceiros %}
 <section class="section section-patrocinadores" id="parceiros">

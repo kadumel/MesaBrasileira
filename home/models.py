@@ -1171,3 +1171,48 @@ class Contato(models.Model):
     @property
     def email_exibir(self):
         return (self.email or "").strip()
+
+
+class ConfiguracaoPush(models.Model):
+    """Chaves VAPID para avisos do PWA. Geradas automaticamente se não houver .env."""
+
+    vapid_public_key = models.CharField(max_length=255, blank=True)
+    vapid_private_key = models.TextField(blank=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Configuração de notificações PWA"
+        verbose_name_plural = "Configuração de notificações PWA"
+
+    def __str__(self):
+        return "Notificações PWA"
+
+    @classmethod
+    def get_solo(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+
+class InscricaoPush(models.Model):
+    """Subscrição Web Push de um aparelho da equipa."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="inscricoes_push",
+        verbose_name="Utilizador",
+    )
+    endpoint = models.URLField(max_length=URL_MAX_LENGTH, unique=True)
+    p256dh = models.CharField(max_length=200)
+    auth = models.CharField(max_length=200)
+    user_agent = models.CharField(max_length=300, blank=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Inscrição de notificação"
+        verbose_name_plural = "Inscrições de notificação"
+        ordering = ["-atualizado_em"]
+
+    def __str__(self):
+        return f"{self.user} · {self.endpoint[:48]}"
