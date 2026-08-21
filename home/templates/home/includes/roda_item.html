@@ -1,6 +1,6 @@
 {% load static %}
 <figure
-  class="roda-item roda-item--{{ kind }}"
+  class="roda-item roda-item--{{ kind }}{% if href %} roda-item--link{% endif %}"
   data-roda-item
   data-kind="{{ kind }}"
   data-order="{{ order }}"
@@ -10,6 +10,18 @@
   <div class="roda-item-slot">
     <div class="roda-item-motion">
       <div class="roda-item-parallax">
+        {% if href %}
+        <a href="{{ href }}" class="roda-item-link" aria-label="Ir para {{ page_name }}">
+          <img
+            src="{% static src %}{% if cache %}?v={{ cache }}{% endif %}"
+            alt="{{ alt }}"
+            width="{{ iw }}"
+            height="{{ ih }}"
+            decoding="async"
+          >
+          <span class="roda-item-name" aria-hidden="true">{{ page_name }}</span>
+        </a>
+        {% else %}
         <img
           src="{% static src %}{% if cache %}?v={{ cache }}{% endif %}"
           alt="{{ alt }}"
@@ -19,6 +31,7 @@
         >
         {% if caption %}
         <span class="roda-item-name">{{ caption }}</span>
+        {% endif %}
         {% endif %}
       </div>
     </div>

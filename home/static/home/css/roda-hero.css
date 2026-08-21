@@ -29,6 +29,7 @@
   height: min(78svh, 740px);
   margin: 0 auto;
   perspective: 1200px;
+  pointer-events: none;
 }
 
 .roda-hero-publico-layer {
@@ -167,6 +168,38 @@
   margin: 0;
 }
 
+.roda-item--link {
+  pointer-events: auto;
+  z-index: calc(var(--z) + 8);
+}
+
+.roda-item-link {
+  display: block;
+  position: relative;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 50%;
+  outline: none;
+}
+
+.roda-item-link img {
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.roda-item-link:hover img,
+.roda-item-link:focus-visible img {
+  transform: scale(1.07);
+  border-color: var(--green);
+  box-shadow: 0 14px 24px rgba(61, 43, 26, 0.34);
+}
+
+.roda-item-link:focus-visible {
+  box-shadow: 0 0 0 3px var(--cream-light), 0 0 0 5px var(--green);
+}
+
 .roda-item-slot {
   transform: translate(-50%, -50%) scale(var(--s)) rotate(var(--rot)) scaleX(var(--flip, 1));
   transform-origin: center;
@@ -203,13 +236,39 @@
   position: absolute;
   left: 50%;
   bottom: -1.35rem;
-  transform: translateX(-50%);
+  transform: translateX(-50%) rotate(calc(-1 * var(--rot, 0deg)));
   white-space: nowrap;
   font-size: 0.62rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--brown);
   text-shadow: 0 1px 0 var(--cream-light);
+}
+
+.roda-item-link .roda-item-name {
+  bottom: auto;
+  top: calc(100% + 0.35rem);
+  padding: 0.22rem 0.55rem;
+  background: var(--cream-light);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: 0 6px 14px rgba(61, 43, 26, 0.16);
+  text-shadow: none;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-50%) rotate(calc(-1 * var(--rot, 0deg))) translateY(4px);
+  transition:
+    opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0.28s;
+}
+
+.roda-item-link:hover .roda-item-name,
+.roda-item-link:focus-visible .roda-item-name {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) rotate(calc(-1 * var(--rot, 0deg))) translateY(0);
 }
 
 .roda-hero-copy {
@@ -221,6 +280,11 @@
   text-align: center;
   margin: -0.5rem auto 0;
   padding: 0 1rem 0.5rem;
+  pointer-events: none;
+}
+
+.roda-hero-copy .btn {
+  pointer-events: auto;
 }
 
 .roda-hero-tagline {
@@ -371,6 +435,10 @@
     display: none;
   }
 
+  .roda-item-link .roda-item-name {
+    display: block;
+  }
+
   .roda-item--sambista {
     --w: 4.2rem;
   }
@@ -405,6 +473,16 @@
   .roda-hero-rings,
   .roda-publico-motion {
     transform: none !important;
+  }
+
+  .roda-item-link img,
+  .roda-item-link .roda-item-name {
+    transition: none;
+  }
+
+  .roda-item-link:hover img,
+  .roda-item-link:focus-visible img {
+    transform: none;
   }
 
   .roda-hero:not(.is-animated) .roda-item-motion,
