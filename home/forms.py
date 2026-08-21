@@ -240,15 +240,14 @@ class RejeitarPedidoMusicaForm(forms.Form):
         widget=forms.Select(attrs={"class": "form-input form-input--sm queue-motivo-select"}),
     )
     observacao_equipe = forms.CharField(
-        required=True,
+        required=False,
         max_length=300,
         label="Resposta da mesa",
         widget=forms.TextInput(
             attrs={
                 "class": "form-input form-input--sm",
-                "placeholder": "Resposta da mesa (obrigatória)",
+                "placeholder": "Resposta da mesa (opcional)",
                 "maxlength": "300",
-                "required": "required",
             }
         ),
     )
@@ -260,9 +259,4 @@ class RejeitarPedidoMusicaForm(forms.Form):
         )
 
     def clean_observacao_equipe(self):
-        valor = (self.cleaned_data.get("observacao_equipe") or "").strip()
-        if not valor:
-            raise forms.ValidationError(
-                "Indique a resposta da mesa — é obrigatória ao rejeitar."
-            )
-        return valor[:300]
+        return (self.cleaned_data.get("observacao_equipe") or "").strip()[:300]

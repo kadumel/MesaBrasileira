@@ -242,7 +242,7 @@
     return `<div class="queue-equipe-actions">
       ${renderMotivoSelectHtml(p.id)}
       <label class="visually-hidden" for="resp-js-${p.id}">Resposta da mesa</label>
-      <input type="text" id="resp-js-${p.id}" class="form-input form-input--sm queue-resposta-input" placeholder="Resposta da mesa (obrigatória ao rejeitar)" maxlength="300">
+      <input type="text" id="resp-js-${p.id}" class="form-input form-input--sm queue-resposta-input" placeholder="Resposta da mesa (opcional)" maxlength="300">
       <div class="queue-equipe-buttons">
         <form method="post" action="${marcarPedidoUrl(p.id)}" class="marcar-tocado-form">
           <input type="hidden" name="csrfmiddlewaretoken" value="${escapeHtml(token)}">
@@ -489,15 +489,6 @@
           if (motivo) {
             motivo.setCustomValidity("Seleccione o motivo da rejeição.");
             motivo.reportValidity();
-          }
-          return;
-        }
-        if (!obs || !obs.value.trim()) {
-          if (obs) {
-            obs.setCustomValidity(
-              "Indique a resposta da mesa — é obrigatória ao rejeitar."
-            );
-            obs.reportValidity();
           }
           return;
         }

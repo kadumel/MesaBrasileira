@@ -226,12 +226,12 @@ class EventoDestaqueAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "Instagram",
+            "Vídeos e galeria",
             {
-                "fields": ("instagram_videos_url",),
+                "fields": ("instagram_videos_url", "midias_url"),
                 "description": (
-                    "Link do Instagram onde ficam os vídeos deste evento "
-                    "(visível na página de detalhe do evento)."
+                    "Links opcionais. Quando preenchidos, aparecem no cartão "
+                    "(página Eventos e início) e na página de detalhe do evento."
                 ),
             },
         ),

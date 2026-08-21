@@ -395,7 +395,7 @@ def marcar_pedido_rejeitado(request, pk):
         return HttpResponseRedirect(reverse("home:pedir_musica"))
     try:
         pedido.marcar_rejeitado(
-            form.cleaned_data["observacao_equipe"],
+            form.cleaned_data.get("observacao_equipe", ""),
             form.cleaned_data["motivo_rejeicao"],
             user=request.user,
         )

@@ -39,7 +39,10 @@
       {% endif %}
       <div class="detail-actions">
         {% if evento.instagram_videos_exibir %}
-        <a href="{{ evento.instagram_videos_exibir }}" class="btn btn-outline" target="_blank" rel="noopener">Ver vídeos no Instagram</a>
+        <a href="{{ evento.instagram_videos_exibir }}" class="btn btn-primary" target="_blank" rel="noopener">Ver vídeos</a>
+        {% endif %}
+        {% if evento.midias_exibir %}
+        <a href="{{ evento.midias_exibir }}" class="btn btn-outline" target="_blank" rel="noopener">Ver galeria</a>
         {% endif %}
         <a href="{% url 'home:eventos' %}" class="btn btn-outline">← Todos os eventos</a>
       </div>

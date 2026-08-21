@@ -437,6 +437,9 @@ a:hover {
   position: relative;
   aspect-ratio: 16/10;
   overflow: hidden;
+  display: block;
+  color: inherit;
+  text-decoration: none;
 }
 
 .event-card-media img {
@@ -476,6 +479,37 @@ a:hover {
 .event-card-body h3 {
   margin: 0.35rem 0 0.5rem;
   font-size: 1.35rem;
+}
+
+.event-card-body h3 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.event-card-body h3 a:hover {
+  color: var(--green);
+}
+
+.event-card-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 1.1rem;
+  margin-top: 0.85rem;
+}
+
+.event-card-link {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--green);
+  text-decoration: none;
+}
+
+.event-card-link:hover {
+  color: var(--brown);
+}
+
+.event-card-link::after {
+  content: " →";
 }
 
 .event-local {
@@ -610,7 +644,7 @@ a:hover {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
-  align-items: start;
+  align-items: stretch;
 }
 
 .requests-panel,
@@ -619,6 +653,10 @@ a:hover {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
 }
 
 .active-event {
@@ -730,6 +768,10 @@ a:hover {
 
 .queue-table {
   min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .queue-table-head {
@@ -744,7 +786,8 @@ a:hover {
   list-style: none;
   margin: 0;
   padding: 0;
-  max-height: 420px;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
 }
 
@@ -1216,6 +1259,11 @@ a:hover {
   color: var(--text-muted);
   padding: 2rem 0;
   text-align: center;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 8rem;
 }
 
 .empty-state,
@@ -2139,6 +2187,10 @@ a.patrocinador-card:hover {
   gap: 1.5rem;
 }
 
+.events-grid > * {
+  height: 100%;
+}
+
 .event-card--link,
 .product-card--link {
   text-decoration: none;
@@ -2543,6 +2595,16 @@ a.patrocinador-card:hover {
 
   .requests-layout {
     grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .requests-panel,
+  .queue-panel {
+    height: auto;
+  }
+
+  .queue-list {
+    max-height: min(60vh, 28rem);
   }
 
   .nav-toggle {

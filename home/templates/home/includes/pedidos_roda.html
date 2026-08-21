@@ -1,7 +1,7 @@
 {% if pode_marcar %}
 <p class="equipe-fila-hint">
   Sessão iniciada como <strong>{{ user.get_username }}</strong> — marque como <strong>tocada</strong> (resposta opcional)
-  ou <strong>rejeite</strong> o pedido (motivo e resposta da mesa obrigatórios).
+  ou <strong>rejeite</strong> o pedido (motivo obrigatório).
 </p>
 {% endif %}
 
@@ -176,7 +176,7 @@
               type="text"
               id="resp-{{ pedido.pk }}"
               class="form-input form-input--sm queue-resposta-input"
-              placeholder="Resposta da mesa (obrigatória ao rejeitar)"
+              placeholder="Resposta da mesa (opcional)"
               maxlength="300"
             >
             <div class="queue-equipe-buttons">

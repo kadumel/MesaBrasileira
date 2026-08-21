@@ -37,6 +37,15 @@ class EventoDestaque(models.Model):
             "(ex.: destaque, álbum ou publicação)."
         ),
     )
+    midias_url = models.URLField(
+        max_length=URL_MAX_LENGTH,
+        blank=True,
+        verbose_name="Galeria (repositório externo)",
+        help_text=(
+            "Link externo para fotos e ficheiros do evento "
+            "(ex.: pasta no Google Drive, Dropbox ou álbum)."
+        ),
+    )
     ordem = models.PositiveIntegerField(default=0)
     destaque = models.BooleanField(
         default=True,
@@ -62,6 +71,10 @@ class EventoDestaque(models.Model):
     @property
     def instagram_videos_exibir(self):
         return (self.instagram_videos_url or "").strip()
+
+    @property
+    def midias_exibir(self):
+        return (self.midias_url or "").strip()
 
 
 class SlideHome(models.Model):
@@ -652,9 +665,7 @@ class PedidoMusica(models.Model):
             return
         if motivo_rejeicao is None:
             raise ValueError("Seleccione o motivo da rejeição.")
-        obs = (observacao_equipe or "").strip()
-        if not obs:
-            raise ValueError("A resposta da mesa é obrigatória ao rejeitar um pedido.")
+        obs = (observacao_equipe or "").strip()[:300]
         self.rejeitado = True
         self.rejeitado_em = timezone.now()
         self.motivo_rejeicao = motivo_rejeicao
