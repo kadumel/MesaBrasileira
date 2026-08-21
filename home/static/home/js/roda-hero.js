@@ -12,6 +12,24 @@
   const rings = hero.querySelector("[data-roda-rings]");
   const copy = hero.querySelector("[data-roda-center]");
   const items = Array.from(hero.querySelectorAll("[data-roda-item]"));
+  const publicoFaces = Array.from(hero.querySelectorAll("[data-roda-publico-face]"));
+
+  function shufflePublico() {
+    if (publicoFaces.length < 2) return;
+    const images = publicoFaces.map((face) => face.querySelector("img"));
+    const sources = images.map((img) => img && img.getAttribute("src")).filter(Boolean);
+    for (let i = sources.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = sources[i];
+      sources[i] = sources[j];
+      sources[j] = tmp;
+    }
+    images.forEach((img, i) => {
+      if (img && sources[i]) img.setAttribute("src", sources[i]);
+    });
+  }
+
+  shufflePublico();
 
   function markReady() {
     hero.classList.add("is-animated");
@@ -58,6 +76,19 @@
         repeat: -1,
         ease: "sine.inOut",
         delay: i * 0.12,
+      });
+    });
+
+    publicoFaces.forEach((face, i) => {
+      const motion = face.querySelector(".roda-publico-motion");
+      if (!motion) return;
+      gsap.to(motion, {
+        y: i % 2 ? 7 : -5,
+        duration: 3.2 + i * 0.2,
+        yoyo: true,
+        repeat: -1,
+        ease: "sine.inOut",
+        delay: i * 0.16,
       });
     });
   }
@@ -163,6 +194,9 @@
   }
 
   gsap.set(motions, { opacity: 0 });
+  gsap.set(publicoFaces.map((face) => face.querySelector(".roda-publico-motion")).filter(Boolean), {
+    opacity: 0,
+  });
   gsap.set([mesa, logo, rings, copy], { opacity: 0 });
   markReady();
 
@@ -225,6 +259,30 @@
         ease: person ? "power3.out" : "back.out(1.08)",
       },
       0.55 + i * 0.16
+    );
+  });
+
+  publicoFaces.forEach((face, i) => {
+    const motion = face.querySelector(".roda-publico-motion");
+    if (!motion) return;
+    const fromLeft = face.closest("[data-roda-publico]")?.dataset.rodaPublico === "left";
+    tl.fromTo(
+      motion,
+      {
+        opacity: 0,
+        x: fromLeft ? -46 : 46,
+        y: 18,
+        scale: 0.86,
+      },
+      {
+        opacity: 1,
+        x: 0,
+        y: 0,
+        scale: 1,
+        duration: 0.75,
+        ease: "power3.out",
+      },
+      0.42 + i * 0.08
     );
   });
 })();

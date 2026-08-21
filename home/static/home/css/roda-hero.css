@@ -24,10 +24,60 @@
 
 .roda-hero-stage {
   position: relative;
+  z-index: 3;
   width: min(1080px, 96vw);
   height: min(78svh, 740px);
   margin: 0 auto;
   perspective: 1200px;
+}
+
+.roda-hero-publico-layer {
+  position: absolute;
+  inset: var(--header-h) 0 6%;
+  z-index: 4;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.roda-hero-publico {
+  position: absolute;
+  top: 14%;
+  bottom: 0;
+  width: min(30vw, 360px);
+}
+
+.roda-hero-publico--left {
+  left: 0;
+}
+
+.roda-hero-publico--right {
+  left: auto;
+  right: 0;
+}
+
+.roda-publico-pessoa {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  z-index: var(--z);
+  width: var(--w);
+  margin: 0;
+  transform: translate(-50%, -50%) scale(var(--s)) rotate(var(--rot));
+  transform-origin: center bottom;
+}
+
+.roda-publico-motion {
+  will-change: transform, opacity;
+}
+
+.roda-publico-pessoa img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  background: transparent;
+  filter: drop-shadow(0 8px 10px rgba(61, 43, 26, 0.26));
+  user-select: none;
 }
 
 .roda-hero-rings {
@@ -242,7 +292,8 @@
   .roda-hero:not(.is-animated) .roda-hero-copy,
   .roda-hero:not(.is-animated) .roda-hero-logo,
   .roda-hero:not(.is-animated) .roda-hero-mesa,
-  .roda-hero:not(.is-animated) .roda-hero-rings {
+  .roda-hero:not(.is-animated) .roda-hero-rings,
+  .roda-hero:not(.is-animated) .roda-publico-motion {
     opacity: 0;
   }
 }
@@ -289,12 +340,20 @@
     bottom: -1.15rem;
   }
 
-  .roda-hero-actions {
-    margin-top: 0.85rem;
+  .roda-hero-publico {
+    width: min(26vw, 220px);
+  }
+
+  .roda-hero-publico-layer {
+    opacity: 0.92;
   }
 }
 
 @media (max-width: 600px) {
+  .roda-hero-publico-layer {
+    display: none;
+  }
+
   .roda-hero-stage {
     height: min(64svh, 480px);
     width: 100vw;
@@ -343,7 +402,8 @@
   .roda-item-motion,
   .roda-item-parallax,
   .roda-hero-orbit,
-  .roda-hero-rings {
+  .roda-hero-rings,
+  .roda-publico-motion {
     transform: none !important;
   }
 
@@ -351,7 +411,8 @@
   .roda-hero:not(.is-animated) .roda-hero-copy,
   .roda-hero:not(.is-animated) .roda-hero-logo,
   .roda-hero:not(.is-animated) .roda-hero-mesa,
-  .roda-hero:not(.is-animated) .roda-hero-rings {
+  .roda-hero:not(.is-animated) .roda-hero-rings,
+  .roda-hero:not(.is-animated) .roda-publico-motion {
     opacity: 1;
   }
 }

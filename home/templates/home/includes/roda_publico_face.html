@@ -1,0 +1,16 @@
+{% load static %}
+<figure
+  class="roda-publico-pessoa"
+  data-roda-publico-face
+  style="--x: {{ x }}; --y: {{ y }}; --s: {{ s }}; --rot: {{ rot }}; --z: {{ z }}; --w: {{ w }};"
+>
+  <div class="roda-publico-motion">
+    <img
+      src="{% static src %}"
+      alt=""
+      width="280"
+      height="420"
+      decoding="async"
+    >
+  </div>
+</figure>

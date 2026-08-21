@@ -2,6 +2,33 @@
 <section class="roda-hero" id="roda" data-roda-hero aria-label="Roda de samba Mesa Brasileira">
   <div class="roda-hero-bg" aria-hidden="true"></div>
 
+  <div class="roda-hero-publico-layer" data-roda-publico-layer aria-hidden="true">
+    <div class="roda-hero-publico roda-hero-publico--left" data-roda-publico="left">
+      {% include "home/includes/roda_publico_face.html" with src="home/img/roda/publico/pessoa-01.png" x="28%" y="36%" s="0.62" rot="-4deg" z="1" w="2.7rem" %}
+      {% include "home/includes/roda_publico_face.html" with src="home/img/roda/publico/pessoa-02.png" x="58%" y="32%" s="0.58" rot="3deg" z="1" w="2.55rem" %}
+      {% include "home/includes/roda_publico_face.html" with src="home/img/roda/publico/pessoa-03.png" x="82%" y="38%" s="0.64" rot="6deg" z="2" w="2.7rem" %}
+      {% include "home/includes/roda_publico_face.html" with src="home/img/roda/publico/pessoa-04.png" x="18%" y="52%" s="0.78" rot="-6deg" z="3" w="3.05rem" %}
+      {% include "home/includes/roda_publico_face.html" with src="home/img/roda/publico/pessoa-05.png" x="46%" y="50%" s="0.82" rot="2deg" z="4" w="3.15rem" %}
+      {% include "home/includes/roda_publico_face.html" with src="home/img/roda/publico/pessoa-06.png" x="74%" y="54%" s="0.76" rot="8deg" z="3" w="3.0rem" %}
+      {% include "home/includes/roda_publico_face.html" with src="home/img/roda/publico/pessoa-07.png" x="12%" y="72%" s="0.98" rot="-3deg" z="6" w="3.45rem" %}
+      {% include "home/includes/roda_publico_face.html" with src="home/img/roda/publico/pessoa-08.png" x="36%" y="78%" s="1.02" rot="4deg" z="7" w="3.55rem" %}
+      {% include "home/includes/roda_publico_face.html" with src="home/img/roda/publico/pessoa-09.png" x="60%" y="70%" s="0.94" rot="-5deg" z="5" w="3.35rem" %}
+      {% include "home/includes/roda_publico_face.html" with src="home/img/roda/publico/pessoa-10.png" x="84%" y="76%" s="1.0" rot="5deg" z="6" w="3.4rem" %}
+    </div>
+    <div class="roda-hero-publico roda-hero-publico--right" data-roda-publico="right">
+      {% include "home/includes/roda_publico_face.html" with src="home/img/roda/publico/pessoa-01.png" x="72%" y="36%" s="0.62" rot="4deg" z="1" w="2.7rem" %}
+      {% include "home/includes/roda_publico_face.html" with src="home/img/roda/publico/pessoa-02.png" x="42%" y="32%" s="0.58" rot="-3deg" z="1" w="2.55rem" %}
+      {% include "home/includes/roda_publico_face.html" with src="home/img/roda/publico/pessoa-03.png" x="18%" y="38%" s="0.64" rot="-6deg" z="2" w="2.7rem" %}
+      {% include "home/includes/roda_publico_face.html" with src="home/img/roda/publico/pessoa-04.png" x="82%" y="52%" s="0.78" rot="6deg" z="3" w="3.05rem" %}
+      {% include "home/includes/roda_publico_face.html" with src="home/img/roda/publico/pessoa-05.png" x="54%" y="50%" s="0.82" rot="-2deg" z="4" w="3.15rem" %}
+      {% include "home/includes/roda_publico_face.html" with src="home/img/roda/publico/pessoa-06.png" x="26%" y="54%" s="0.76" rot="-8deg" z="3" w="3.0rem" %}
+      {% include "home/includes/roda_publico_face.html" with src="home/img/roda/publico/pessoa-07.png" x="88%" y="72%" s="0.98" rot="3deg" z="6" w="3.45rem" %}
+      {% include "home/includes/roda_publico_face.html" with src="home/img/roda/publico/pessoa-08.png" x="64%" y="78%" s="1.02" rot="-4deg" z="7" w="3.55rem" %}
+      {% include "home/includes/roda_publico_face.html" with src="home/img/roda/publico/pessoa-09.png" x="40%" y="70%" s="0.94" rot="5deg" z="5" w="3.35rem" %}
+      {% include "home/includes/roda_publico_face.html" with src="home/img/roda/publico/pessoa-10.png" x="16%" y="76%" s="1.0" rot="-5deg" z="6" w="3.4rem" %}
+    </div>
+  </div>
+
   <div class="roda-hero-stage" data-roda-stage>
     <div class="roda-hero-rings" data-roda-rings aria-hidden="true">
       <span class="roda-hero-ring roda-hero-ring--outer"></span>
@@ -68,7 +95,8 @@
     .roda-hero:not(.is-animated) .roda-hero-copy,
     .roda-hero:not(.is-animated) .roda-hero-logo,
     .roda-hero:not(.is-animated) .roda-hero-mesa,
-    .roda-hero:not(.is-animated) .roda-hero-rings {
+    .roda-hero:not(.is-animated) .roda-hero-rings,
+    .roda-hero:not(.is-animated) .roda-publico-motion {
       opacity: 1;
     }
   </style>
