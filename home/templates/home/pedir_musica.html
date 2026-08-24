@@ -18,10 +18,13 @@
   <div class="container">
     {% if not user.is_authenticated %}
     <p class="equipe-fila-login reveal">
-      <a href="{% url 'home:login' %}?next={{ request.path|urlencode }}">Inicie sessão</a>
-      para marcar músicas como tocadas e registar observações.
+      Para pedir uma música,
+      <a href="{% url 'home:cadastro' %}">crie a sua conta</a>
+      ou
+      <a href="{% url 'home:login' %}?next={{ request.path|urlencode }}">inicie sessão</a>
+      e confirme o email.
     </p>
-    {% elif vapid_public_key %}
+    {% elif pode_marcar and vapid_public_key %}
     <aside
       class="push-equipe"
       id="push-equipe"

@@ -178,7 +178,7 @@ MEDIA_ROOT = _resolve_media_root()
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 DATA_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024
 
-# Auth pages (only team needs login to mark songs)
+# Auth: public registration to request songs; team marks the queue
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/pedir-musica/'
 LOGOUT_REDIRECT_URL = '/'
@@ -194,6 +194,7 @@ def _env_strip(key: str, default: str = "") -> str:
 
 SITE_URL = _env_strip("SITE_URL", "http://127.0.0.1:8000").rstrip("/")
 LOJA_TOKEN_EMAIL_HORAS = int(_env_strip("LOJA_TOKEN_EMAIL_HORAS", "48"))
+CADASTRO_TOKEN_EMAIL_HORAS = int(_env_strip("CADASTRO_TOKEN_EMAIL_HORAS", "48"))
 LOJA_MBWAY_TELEFONE = _env_strip("LOJA_MBWAY_TELEFONE")
 LOJA_IBAN = _env_strip("LOJA_IBAN")
 
@@ -206,6 +207,12 @@ if _n8n_webhook_url:
     EMAIL_BACKEND = "home.email_backends.n8n_webhook.N8nWebhookEmailBackend"
     N8N_WEBHOOK_URL = _n8n_webhook_url
     N8N_WEBHOOK_SECRET = _env_strip("N8N_WEBHOOK_SECRET")
+    # Header Auth do n8n: Name = N8N_HEADER_USERNAME, Value = N8N_WEBHOOK_SECRET
+    N8N_HEADER_USERNAME = _env_strip("N8N_HEADER_USERNAME")
+    N8N_WEBHOOK_AUTH_HEADER = _env_strip("N8N_WEBHOOK_AUTH_HEADER")
+    N8N_WEBHOOK_AUTH_VALUE = _env_strip("N8N_WEBHOOK_AUTH_VALUE")
+    N8N_WEBHOOK_BASIC_USER = _env_strip("N8N_WEBHOOK_BASIC_USER")
+    N8N_WEBHOOK_BASIC_PASSWORD = _env_strip("N8N_WEBHOOK_BASIC_PASSWORD")
 elif _email_backend:
     EMAIL_BACKEND = _email_backend
 elif _email_host_user:

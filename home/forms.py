@@ -1,16 +1,42 @@
 from django import forms
+from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.forms import AuthenticationForm
+from django.core.exceptions import ValidationError
+from django.db.models import Q
 
 from .models import Pedido, PedidoMusica, Produto, TamanhoProduto, MotivoRejeicao
 
 
 class EquipeLoginForm(AuthenticationForm):
+    error_messages = {
+        "invalid_login": "Email, utilizador ou palavra-passe incorrectos.",
+        "inactive": "Confirme o seu email para activar a conta. Verifique a caixa de entrada.",
+    }
     username = forms.CharField(
-        label="Utilizador",
+        label="Email ou utilizador",
         widget=forms.TextInput(
-            attrs={"class": "form-input", "placeholder": "Utilizador", "autofocus": True}
+            attrs={
+                "class": "form-input",
+                "placeholder": "Email ou utilizador",
+                "autofocus": True,
+                "autocomplete": "username",
+            }
         ),
     )
+
+    def clean_username(self):
+        username = (self.cleaned_data.get("username") or "").strip()
+        if "@" in username:
+            UserModel = get_user_model()
+            user = (
+                UserModel.objects.filter(Q(email__iexact=username) | Q(username__iexact=username))
+                .order_by("-is_active")
+                .first()
+            )
+            if user:
+                return user.get_username()
+            return username.lower()
+        return username
     password = forms.CharField(
         label="Palavra-passe",
         widget=forms.PasswordInput(
@@ -19,10 +45,128 @@ class EquipeLoginForm(AuthenticationForm):
     )
 
 
+
+class CadastroUtilizadorForm(forms.Form):
+    nome = forms.CharField(
+        max_length=150,
+        label="Nome",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-input",
+                "placeholder": "O seu nome",
+                "autocomplete": "name",
+            }
+        ),
+    )
+    email = forms.EmailField(
+        label="Email",
+        widget=forms.EmailInput(
+            attrs={
+                "class": "form-input",
+                "placeholder": "seu@email.com",
+                "autocomplete": "email",
+            }
+        ),
+    )
+    password1 = forms.CharField(
+        label="Palavra-passe",
+        strip=False,
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "form-input",
+                "placeholder": "Palavra-passe",
+                "autocomplete": "new-password",
+            }
+        ),
+    )
+    password2 = forms.CharField(
+        label="Confirmar palavra-passe",
+        strip=False,
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "form-input",
+                "placeholder": "Repita a palavra-passe",
+                "autocomplete": "new-password",
+            }
+        ),
+    )
+
+    aceita_emails_promocionais = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="Quero receber emails promocionais e publicidade da Mesa Brasileira.",
+        widget=forms.CheckboxInput(attrs={"class": "form-check-input"}),
+    )
+
+    def clean_nome(self):
+        return (self.cleaned_data.get("nome") or "").strip()
+
+    def clean_email(self):
+        email = (self.cleaned_data.get("email") or "").strip().lower()
+        UserModel = get_user_model()
+        existente = UserModel.objects.filter(
+            Q(email__iexact=email) | Q(username__iexact=email)
+        ).first()
+        if existente and existente.is_active:
+            raise ValidationError(
+                "Já existe uma conta com este email. Inicie sessão."
+            )
+        self._utilizador_existente = existente
+        return email
+
+    def clean(self):
+        cleaned = super().clean()
+        p1 = cleaned.get("password1")
+        p2 = cleaned.get("password2")
+        if p1 and p2 and p1 != p2:
+            self.add_error("password2", "As palavras-passe não coincidem.")
+        elif p1:
+            try:
+                password_validation.validate_password(p1)
+            except ValidationError as exc:
+                self.add_error("password1", exc)
+        return cleaned
+
+    def save(self):
+        from .models import CadastroEmailToken, PerfilUtilizador
+
+        email = self.cleaned_data["email"]
+        nome = self.cleaned_data["nome"]
+        password = self.cleaned_data["password1"]
+        UserModel = get_user_model()
+        user = getattr(self, "_utilizador_existente", None)
+        if user:
+            user.set_password(password)
+            user.email = email
+            user.username = email[:150]
+            user.first_name = nome[:150]
+            user.last_name = ""
+            user.is_active = False
+            user.save()
+        else:
+            user = UserModel.objects.create_user(
+                username=email[:150],
+                email=email,
+                password=password,
+                first_name=nome[:150],
+                is_active=False,
+            )
+        CadastroEmailToken.renovar_para(user)
+        PerfilUtilizador.objects.update_or_create(
+            user=user,
+            defaults={
+                "aceita_emails_promocionais": bool(
+                    self.cleaned_data.get("aceita_emails_promocionais")
+                ),
+            },
+        )
+        return user
+
+
 class PedidoMusicaForm(forms.ModelForm):
     class Meta:
         model = PedidoMusica
-        fields = ["musica", "artista", "pedido_por", "mensagem"]
+        fields = ["musica", "artista", "mensagem"]
         widgets = {
             "musica": forms.TextInput(
                 attrs={
@@ -35,13 +179,6 @@ class PedidoMusicaForm(forms.ModelForm):
                 attrs={
                     "class": "form-input",
                     "placeholder": "Artista (opcional)",
-                }
-            ),
-            "pedido_por": forms.TextInput(
-                attrs={
-                    "class": "form-input",
-                    "placeholder": "O seu nome",
-                    "required": True,
                 }
             ),
             "mensagem": forms.TextInput(

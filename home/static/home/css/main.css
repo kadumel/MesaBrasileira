@@ -185,6 +185,75 @@ a:hover {
   font-family: inherit;
 }
 
+.nav-end {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.nav-audio-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  padding: 0;
+  flex-shrink: 0;
+  border: 1.5px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  line-height: 0;
+  transition:
+    color var(--transition),
+    border-color var(--transition),
+    background var(--transition),
+    box-shadow var(--transition);
+}
+
+.nav-audio-toggle:hover {
+  color: var(--text);
+  border-color: var(--brown);
+  background: var(--gold-glow);
+}
+
+.nav-audio-toggle:focus-visible {
+  outline: 2px solid var(--brown);
+  outline-offset: 3px;
+}
+
+.nav-audio-toggle.is-playing {
+  color: var(--brown);
+  border-color: var(--brown);
+  animation: nav-audio-pulse 2.6s ease-in-out infinite;
+}
+
+.nav-audio-icon {
+  display: none;
+  width: 18px;
+  height: 18px;
+}
+
+.nav-audio-icon--play {
+  margin-left: 2px;
+}
+
+.nav-audio-toggle.is-playing .nav-audio-icon--pause,
+.nav-audio-toggle:not(.is-playing) .nav-audio-icon--play {
+  display: block;
+}
+
+@keyframes nav-audio-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(75, 54, 33, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(75, 54, 33, 0);
+  }
+}
+
 .nav-toggle {
   display: none;
   flex-direction: column;
@@ -898,6 +967,23 @@ a:hover {
   margin-bottom: 0.2rem;
 }
 
+.pedido-fila-proprio {
+  margin: 0.65rem 0 0;
+  padding: 0.75rem 1rem;
+  background: var(--green-glow);
+  border: 1px solid var(--green);
+  border-radius: var(--radius);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--brown);
+}
+
+.pedido-fila-proprio strong {
+  display: block;
+  margin-bottom: 0.2rem;
+  color: var(--green);
+}
+
 .pedido-form--bloqueado .pedido-form-fieldset {
   opacity: 0.65;
   pointer-events: none;
@@ -954,6 +1040,17 @@ a:hover {
 
 @media (prefers-reduced-motion: reduce) {
   .push-equipe {
+    transition: none;
+  }
+
+  .nav-audio-toggle.is-playing {
+    animation: none;
+  }
+
+  .reveal,
+  .reveal-stagger > * {
+    opacity: 1;
+    transform: none;
     transition: none;
   }
 }
@@ -2195,7 +2292,7 @@ a.patrocinador-card:hover {
 
 .events-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
   gap: 1.5rem;
 }
 
@@ -2505,6 +2602,14 @@ a.patrocinador-card:hover {
   padding: 0.75rem 0;
 }
 
+main:not(.page-main) > .site-messages {
+  padding-top: calc(var(--header-h) + 0.75rem);
+}
+
+.login-page > .site-messages {
+  padding-top: 0.75rem;
+}
+
 .site-message {
   padding: 0.75rem 1rem;
   margin-bottom: 0.5rem;
@@ -2533,9 +2638,13 @@ a.patrocinador-card:hover {
 /* Login page */
 .login-page,
 .login-page-inner {
-  padding-top: 2rem;
+  padding-top: calc(var(--header-h) + 1.5rem);
   padding-bottom: 4rem;
   min-height: calc(100vh - var(--header-h));
+}
+
+.login-page > .site-messages + .login-page-inner {
+  padding-top: 0.5rem;
 }
 
 .login-container {
@@ -2619,6 +2728,10 @@ a.patrocinador-card:hover {
   .queue-list {
     flex: 1 1 auto;
     max-height: min(60vh, 28rem);
+  }
+
+  .nav-end {
+    gap: 0.35rem;
   }
 
   .nav-toggle {
@@ -2710,4 +2823,100 @@ a.patrocinador-card:hover {
     flex: 0 0 auto;
     min-width: 200px;
   }
+
+  .section {
+    padding: 3.5rem 0;
+  }
+
+  .section-header {
+    margin-bottom: 1.75rem;
+  }
+
+  .page-hero {
+    padding: 2rem 0 1.75rem;
+  }
+}
+
+
+/* Cadastro / pedido autenticado */
+.auth-switch {
+  margin-top: 1.25rem;
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+.auth-switch a {
+  color: var(--green);
+  font-weight: 600;
+}
+.login-page .login-container .requests-panel {
+  padding: 1.25rem 1.35rem 1.35rem;
+}
+.cadastro-header {
+  margin-bottom: 0.85rem;
+}
+.cadastro-header h2 {
+  font-size: 1.65rem;
+}
+.cadastro-header .login-subtitle {
+  margin-top: 0.35rem;
+  font-size: 0.88rem;
+}
+.cadastro-form {
+  gap: 0.35rem;
+}
+.cadastro-form .form-label {
+  margin-top: 0.15rem;
+  margin-bottom: 0;
+  font-size: 0.8rem;
+}
+.cadastro-form .form-input {
+  padding: 0.65rem 0.85rem;
+}
+.cadastro-form .form-hint {
+  min-height: 0;
+  margin: 0;
+  font-size: 0.8rem;
+}
+.login-page .auth-switch {
+  margin-top: 0.85rem;
+  font-size: 0.88rem;
+}
+.pedido-conta-hint {
+  margin: 0 0 0.85rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.pedido-cadastro-gate {
+  padding: 0.25rem 0 0.5rem;
+}
+.pedido-cadastro-gate p {
+  margin: 0 0 1rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.pedido-cadastro-gate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+
+.cadastro-form .form-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin: 0.45rem 0 0.35rem;
+  color: var(--text);
+  font-size: 0.85rem;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.cadastro-form .form-check-input {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+  accent-color: var(--green);
 }

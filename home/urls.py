@@ -3,6 +3,7 @@ from django.urls import path
 from django.contrib.auth.views import LoginView, LogoutView
 
 from . import views
+from . import views_auth
 from . import views_loja
 from .forms import EquipeLoginForm
 
@@ -82,4 +83,20 @@ urlpatterns = [
         name="login",
     ),
     path("accounts/logout/", LogoutView.as_view(), name="logout"),
+    path("accounts/cadastro/", views_auth.cadastro, name="cadastro"),
+    path(
+        "accounts/cadastro/verifique-email/",
+        views_auth.cadastro_verifique_email,
+        name="cadastro_verifique_email",
+    ),
+    path(
+        "accounts/confirmar-email/<uuid:token>/",
+        views_auth.confirmar_cadastro,
+        name="confirmar_cadastro",
+    ),
+    path(
+        "accounts/reenviar-confirmacao/",
+        views_auth.reenviar_confirmacao_cadastro,
+        name="reenviar_confirmacao_cadastro",
+    ),
 ]

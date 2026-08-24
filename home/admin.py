@@ -3,6 +3,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from .models import (
+    PerfilUtilizador,
     ConfiguracaoHome,
     Contato,
     EventoDestaque,
@@ -684,6 +685,7 @@ class PedidoMusicaAdmin(admin.ModelAdmin):
         "musica",
         "artista",
         "pedido_por",
+        "utilizador",
         "evento",
         "tocado",
         "rejeitado",
@@ -695,7 +697,7 @@ class PedidoMusicaAdmin(admin.ModelAdmin):
         "criado_em",
     )
     list_filter = ("tocado", "rejeitado", "motivo_rejeicao", "evento")
-    search_fields = ("musica", "pedido_por", "artista")
+    search_fields = ("musica", "pedido_por", "artista", "utilizador__username", "utilizador__email")
     autocomplete_fields = ("motivo_rejeicao",)
     actions = ["marcar_como_tocados"]
 
@@ -800,3 +802,10 @@ class VideoEventoAdmin(admin.ModelAdmin):
                 video.save(update_fields=["thumbnail", "thumbnail_url"])
                 ok += 1
         self.message_user(request, f"{ok} miniatura(s) atualizada(s).", level="success")
+
+
+@admin.register(PerfilUtilizador)
+class PerfilUtilizadorAdmin(admin.ModelAdmin):
+    list_display = ("user", "aceita_emails_promocionais", "atualizado_em")
+    list_filter = ("aceita_emails_promocionais",)
+    search_fields = ("user__username", "user__email", "user__first_name")

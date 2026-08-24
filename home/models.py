@@ -6,6 +6,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.core.validators import FileExtensionValidator, MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 
@@ -583,6 +584,15 @@ class PedidoMusica(models.Model):
     musica = models.CharField(max_length=200, verbose_name="Música")
     artista = models.CharField(max_length=200, blank=True)
     pedido_por = models.CharField(max_length=120, verbose_name="O seu nome")
+
+    utilizador = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pedidos_musica",
+        verbose_name="Utilizador",
+    )
     mensagem = models.CharField(max_length=300, blank=True)
     observacao_equipe = models.CharField(
         max_length=300,
@@ -633,9 +643,34 @@ class PedidoMusica(models.Model):
         ordering = ["tocado", "id"]
         verbose_name = "Pedido de música"
         verbose_name_plural = "Pedidos de música"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["evento", "utilizador"],
+                condition=Q(tocado=False, rejeitado=False, utilizador__isnull=False),
+                name="unico_pedido_ativo_por_utilizador_evento",
+                violation_error_message=(
+                    "Este utilizador já tem um pedido ativo neste evento."
+                ),
+            ),
+        ]
 
     def __str__(self):
         return f"{self.musica} — {self.pedido_por}"
+
+    @classmethod
+    def pedido_ativo_do_utilizador(cls, evento, user):
+        if not evento or not user or not getattr(user, "is_authenticated", False):
+            return None
+        return (
+            cls.objects.filter(
+                evento=evento,
+                utilizador=user,
+                tocado=False,
+                rejeitado=False,
+            )
+            .order_by("id")
+            .first()
+        )
 
     @classmethod
     def ordenar_para_fila(cls, queryset=None):
@@ -706,6 +741,84 @@ class PedidoMusica(models.Model):
         if user is not None and getattr(user, "is_authenticated", False):
             self.marcado_por = user
         self.save(update_fields=update_fields)
+
+
+
+
+class PerfilUtilizador(models.Model):
+    """Dados extra da conta pública (preferências de comunicação)."""
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="perfil",
+        verbose_name="Utilizador",
+    )
+    aceita_emails_promocionais = models.BooleanField(
+        default=False,
+        verbose_name="Emails promocionais",
+        help_text="Se marcado, pode receber novidades, promoções e publicidade.",
+    )
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Perfil de utilizador"
+        verbose_name_plural = "Perfis de utilizador"
+
+    def __str__(self):
+        return f"Perfil {self.user}"
+
+
+class CadastroEmailToken(models.Model):
+    """Token enviado por email para activar a conta de um utilizador público."""
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="token_cadastro",
+        verbose_name="Utilizador",
+    )
+    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    expira_em = models.DateTimeField()
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Token de confirmação de cadastro"
+        verbose_name_plural = "Tokens de confirmação de cadastro"
+
+    def __str__(self):
+        return f"Confirmação {self.user}"
+
+    @classmethod
+    def renovar_para(cls, user, horas=None):
+        horas = horas or int(getattr(settings, "CADASTRO_TOKEN_EMAIL_HORAS", 48))
+        obj, _created = cls.objects.update_or_create(
+            user=user,
+            defaults={
+                "token": uuid.uuid4(),
+                "expira_em": timezone.now() + timedelta(hours=horas),
+            },
+        )
+        return obj
+
+    def valido(self) -> bool:
+        return timezone.now() < self.expira_em
+
+    def confirmar(self):
+        user = self.user
+        if not user.is_active:
+            user.is_active = True
+            user.save(update_fields=["is_active"])
+        self.delete()
+
+    def url_confirmacao(self) -> str:
+        base = getattr(settings, "SITE_URL", "").rstrip("/")
+        path = reverse(
+            "home:confirmar_cadastro",
+            kwargs={"token": str(self.token)},
+        )
+        return f"{base}{path}"
 
 
 class VideoEvento(models.Model):

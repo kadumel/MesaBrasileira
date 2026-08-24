@@ -44,31 +44,55 @@
         <strong>Fila cheia.</strong>
         Aguarde a roda tocar mais músicas antes de enviar outro pedido.
       </p>
+      <p
+        class="pedido-fila-proprio"
+        id="pedido-proprio-aviso"
+        role="status"
+        {% if not ja_tem_pedido_em_fila %}hidden{% endif %}
+      >
+        <strong>Já tem um pedido na fila.</strong>
+        Aguarde a roda tocar
+        <span id="pedido-ativo-musica-wrap"{% if not pedido_ativo %} hidden{% endif %}>
+          «<span id="pedido-ativo-musica">{% if pedido_ativo %}{{ pedido_ativo.musica }}{% endif %}</span>»
+        </span>
+        ou a mesa tratar esse pedido antes de enviar outro.
+      </p>
     </div>
 
+    {% if user.is_authenticated %}
+    <p class="pedido-conta-hint">A pedir como <strong>{{ user.get_full_name|default:user.get_username }}</strong></p>
     <form
       id="form-pedido"
-      class="pedido-form{% if fila_cheia %} pedido-form--bloqueado{% endif %}"
+      class="pedido-form{% if fila_cheia or ja_tem_pedido_em_fila %} pedido-form--bloqueado{% endif %}"
       method="post"
       action="{% url 'home:pedido_musica' %}"
       data-evento-id="{{ evento_samba.pk }}"
       data-fila-url="{% url 'home:fila_pedidos' evento_samba.pk %}"
       data-limite-em-fila="{{ limite_pedidos_em_fila }}"
       data-fila-cheia="{% if fila_cheia %}1{% else %}0{% endif %}"
+      data-ja-tem-pedido="{% if ja_tem_pedido_em_fila %}1{% else %}0{% endif %}"
     >
       {% csrf_token %}
       <input type="hidden" name="evento_id" value="{{ evento_samba.pk }}">
-      <fieldset class="pedido-form-fieldset" {% if fila_cheia %}disabled{% endif %}>
+      <fieldset class="pedido-form-fieldset" {% if fila_cheia or ja_tem_pedido_em_fila %}disabled{% endif %}>
         {{ form_pedido.musica }}
         {{ form_pedido.artista }}
-        {{ form_pedido.pedido_por }}
         {{ form_pedido.mensagem }}
-        <button type="submit" class="btn btn-primary btn-block" {% if fila_cheia %}disabled{% endif %}>
+        <button type="submit" class="btn btn-primary btn-block" {% if fila_cheia or ja_tem_pedido_em_fila %}disabled{% endif %}>
           Enviar pedido
         </button>
       </fieldset>
       <p class="form-hint" id="form-feedback" role="status"></p>
     </form>
+    {% else %}
+    <div class="pedido-cadastro-gate">
+      <p>Só quem está cadastrado e com o email confirmado pode pedir música na roda.</p>
+      <div class="pedido-cadastro-gate-actions">
+        <a class="btn btn-primary" href="{% url 'home:cadastro' %}">Criar conta</a>
+        <a class="btn btn-outline" href="{% url 'home:login' %}?next={{ request.path|urlencode }}">Entrar</a>
+      </div>
+    </div>
+    {% endif %}
     {% else %}
     <div class="empty-event">
       <p>Nenhum evento pedir música ativo com pedidos abertos.</p>

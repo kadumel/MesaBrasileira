@@ -20,7 +20,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   {% block extra_css %}{% endblock %}
-  <link rel="stylesheet" href="{% static 'home/css/main.css' %}?v=24">
+  <link rel="stylesheet" href="{% static 'home/css/main.css' %}?v=31">
 </head>
 <body>
   <audio
@@ -37,7 +37,7 @@
     <source src="{% static 'home/audio/o-mesa-chegou.mp3' %}" type="audio/mpeg">
     {% endif %}
   </audio>
-  <script src="{% static 'home/js/site-audio.js' %}?v=1"></script>
+  <script src="{% static 'home/js/site-audio.js' %}?v=3"></script>
   <div class="grain" aria-hidden="true"></div>
   {% include "home/includes/header.html" %}
   <main class="{% block main_class %}{% endblock %}">
@@ -52,6 +52,6 @@
   </main>
   {% include "home/includes/footer.html" %}
   {% block extra_js %}{% endblock %}
-  <script src="{% static 'home/js/main.js' %}?v=10"></script>
+  <script src="{% static 'home/js/main.js' %}?v=12"></script>
 </body>
 </html>

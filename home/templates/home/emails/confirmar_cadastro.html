@@ -1,0 +1,35 @@
+{% extends "home/emails/base.html" %}
+
+{% block title %}Confirmar cadastro | {{ site_nome }}{% endblock %}
+
+{% block content %}
+<p style="margin:0 0 16px;font-size:17px;color:{{ cor_brown }};">
+  Olá <strong>{{ nome }}</strong>,
+</p>
+<p style="margin:0 0 20px;color:{{ cor_brown }};">
+  Obrigado por se juntar à <strong>{{ site_nome }}</strong>.
+  Para validar o seu email e começar a pedir músicas na roda, clique no botão abaixo
+  (válido por {{ horas_validade }} horas):
+</p>
+
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 24px;">
+  <tr>
+    <td align="center" style="border-radius:8px;background-color:{{ cor_green }};">
+      <a href="{{ url_confirmacao }}" style="display:inline-block;padding:14px 32px;font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none;border-radius:8px;">
+        Confirmar o meu email
+      </a>
+    </td>
+  </tr>
+</table>
+
+<p style="margin:0 0 8px;font-size:13px;color:{{ cor_brown_muted }};">
+  Ou copie este link no browser:
+</p>
+<p style="margin:0 0 20px;font-size:12px;word-break:break-all;">
+  <a href="{{ url_confirmacao }}" style="color:{{ cor_green }};">{{ url_confirmacao }}</a>
+</p>
+
+<p style="margin:0;font-size:13px;color:{{ cor_brown_muted }};">
+  Se não criou esta conta, ignore este email.
+</p>
+{% endblock %}

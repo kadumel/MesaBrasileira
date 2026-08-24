@@ -1,0 +1,48 @@
+{% extends "home/base.html" %}
+{% load static %}
+
+{% block title %}Confirme o email | Mesa Brasileira{% endblock %}
+{% block main_class %}login-page{% endblock %}
+
+{% block content %}
+  <div class="login-page-inner">
+    <div class="container login-container">
+      <section class="requests-panel" aria-label="Verifique o email">
+        <div class="login-logo-wrap">
+          <img src="{% static 'home/img/logo.jpg' %}" alt="Mesa Brasileira" class="logo-img" width="88" height="88">
+        </div>
+        <header class="login-header">
+          <p class="eyebrow">Quase lá</p>
+          <h2>Verifique o seu email</h2>
+          <p class="login-subtitle">
+            {% if email %}
+            Enviámos um link de confirmação para <strong>{{ email }}</strong>.
+            {% else %}
+            Enviámos um link de confirmação para o email indicado no cadastro.
+            {% endif %}
+            Abra a mensagem e clique no botão para activar a conta.
+          </p>
+        </header>
+        <p class="form-hint" style="text-align:center;margin-bottom:1.25rem;">
+          O link é válido por 48 horas. Confira também a pasta de spam.
+        </p>
+        <form method="post" action="{% url 'home:reenviar_confirmacao_cadastro' %}">
+          {% csrf_token %}
+          {% if email %}
+          <input type="hidden" name="email" value="{{ email }}">
+          {% else %}
+          <label for="id_email_reenvio" class="form-label">Email</label>
+          <input id="id_email_reenvio" type="email" name="email" class="form-input" required placeholder="seu@email.com">
+          {% endif %}
+          <button type="submit" class="btn btn-outline btn-block">
+            Reenviar email de confirmação
+          </button>
+        </form>
+        <p class="auth-switch">
+          Já confirmou?
+          <a href="{% url 'home:login' %}">Entrar</a>
+        </p>
+      </section>
+    </div>
+  </div>
+{% endblock %}

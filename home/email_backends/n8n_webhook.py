@@ -11,6 +11,7 @@ Ver docs/n8n-emails.md
 
 from __future__ import annotations
 
+import base64
 import json
 import logging
 from urllib.error import HTTPError, URLError
@@ -73,10 +74,7 @@ class N8nWebhookEmailBackend(BaseEmailBackend):
 
         data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         headers = {"Content-Type": "application/json; charset=utf-8"}
-
-        secret = getattr(settings, "N8N_WEBHOOK_SECRET", "").strip()
-        if secret:
-            headers["X-Webhook-Secret"] = secret
+        headers.update(self._auth_headers())
 
         request = Request(
             webhook_url,
@@ -99,6 +97,45 @@ class N8nWebhookEmailBackend(BaseEmailBackend):
                 )
         except HTTPError as exc:
             err = exc.read().decode("utf-8", errors="replace")
-            raise OSError(f"n8n webhook HTTP {exc.code}: {err[:500]}") from exc
+            hint = ""
+            if exc.code == 403:
+                hint = (
+                    " A credencial do nó Webhook no n8n tem de coincidir com o .env: "
+                    "Header Auth Name=N8N_HEADER_USERNAME e Value=N8N_WEBHOOK_SECRET "
+                    "(ou defina N8N_WEBHOOK_AUTH_HEADER / N8N_WEBHOOK_BASIC_USER). "
+                    "O fluxo tem de estar activo e a URL deve ser /webhook/ (produção), não /webhook-test/."
+                )
+            elif exc.code == 404:
+                hint = (
+                    " Active o workflow no n8n (interruptor no canto superior direito) "
+                    "e use a URL de produção /webhook/..."
+                )
+            raise OSError(f"n8n webhook HTTP {exc.code}: {err[:500]}{hint}") from exc
         except URLError as exc:
             raise OSError(f"n8n webhook rede: {exc}") from exc
+
+    def _auth_headers(self) -> dict[str, str]:
+        """
+        Header Auth do n8n: cabeçalho N8N_HEADER_USERNAME = N8N_WEBHOOK_SECRET.
+        Basic Auth: N8N_WEBHOOK_BASIC_USER / N8N_WEBHOOK_BASIC_PASSWORD.
+        """
+        headers: dict[str, str] = {}
+        basic_user = getattr(settings, "N8N_WEBHOOK_BASIC_USER", "").strip()
+        basic_password = getattr(settings, "N8N_WEBHOOK_BASIC_PASSWORD", "").strip()
+        if basic_user:
+            token = base64.b64encode(
+                f"{basic_user}:{basic_password}".encode("utf-8")
+            ).decode("ascii")
+            headers["Authorization"] = f"Basic {token}"
+            return headers
+
+        secret = getattr(settings, "N8N_WEBHOOK_SECRET", "").strip()
+        username = getattr(settings, "N8N_HEADER_USERNAME", "").strip()
+        if username and secret:
+            headers[username] = secret
+        elif secret:
+            headers["X-Webhook-Secret"] = secret
+            auth_header = getattr(settings, "N8N_WEBHOOK_AUTH_HEADER", "").strip() or "Authorization"
+            auth_value = getattr(settings, "N8N_WEBHOOK_AUTH_VALUE", "").strip() or secret
+            headers[auth_header] = auth_value
+        return headers

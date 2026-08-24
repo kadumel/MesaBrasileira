@@ -1,0 +1,12 @@
+Olá {{ nome }},
+
+Obrigado por se juntar à {{ site_nome }}.
+
+Para validar o seu email e começar a pedir músicas na roda, abra o link abaixo (válido por {{ horas_validade }} horas):
+
+{{ url_confirmacao }}
+
+Se não criou esta conta, ignore este email.
+
+Com respeito ao nosso samba,
+{{ site_nome }}

@@ -7,7 +7,8 @@ Em vez disso, o Django faz `POST` para um **webhook n8n** com o HTML já montado
 
 ```env
 N8N_WEBHOOK_URL=https://SEU-N8N/webhook/mesa-brasileira-email
-N8N_WEBHOOK_SECRET=uma-chave-secreta-opcional
+N8N_WEBHOOK_SECRET=uma-chave-secreta
+N8N_HEADER_USERNAME=o-name-do-header-auth-no-n8n
 DEFAULT_FROM_EMAIL=Mesa Brasileira <seu@gmail.com>
 CONTATO_EMAIL=contacto@mesabrasileira.pt
 SITE_URL=https://mesabrasileira.pt
@@ -33,7 +34,26 @@ O Django envia:
 }
 ```
 
-Se definir `N8N_WEBHOOK_SECRET`, o header `X-Webhook-Secret` é enviado com o mesmo valor (validar no n8n).
+Header Auth no n8n (nó Webhook):
+
+- **Name** = valor de `N8N_HEADER_USERNAME`
+- **Value** = valor de `N8N_WEBHOOK_SECRET`
+
+O Django envia o cabeçalho `{N8N_HEADER_USERNAME}: {N8N_WEBHOOK_SECRET}`.
+
+Autenticação **Basic Auth** no webhook:
+
+```env
+N8N_WEBHOOK_BASIC_USER=utilizador
+N8N_WEBHOOK_BASIC_PASSWORD=palavra-passe
+```
+
+Cabeçalho ou valor diferentes do padrão:
+
+```env
+N8N_WEBHOOK_AUTH_HEADER=Authorization
+N8N_WEBHOOK_AUTH_VALUE=Bearer o-seu-token
+```
 
 ## Workflow n8n (exemplo)
 

@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Count, Q
 from django.http import FileResponse, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
@@ -42,9 +42,23 @@ from .services.pedido_push import notificar_novo_pedido, vapid_public_key
 EQUIPE_GROUP_NAME = getattr(settings, "MESA_BRASILEIRA_EQUIPE_GROUP_NAME", "Equipe")
 
 
+def nome_publico_utilizador(user) -> str:
+    """Nome visível na fila a partir da conta registada."""
+    nome = (user.get_full_name() or "").strip()
+    if nome:
+        return nome[:120]
+    if getattr(user, "email", ""):
+        return user.email.split("@")[0][:120]
+    return (user.get_username() or "Convidado")[:120]
+
+
 def user_pode_marcar(user):
-    """Utilizadores com sessão iniciada gerem a fila na página de pedidos."""
-    return user.is_authenticated
+    """Só a equipa (grupo Equipe, staff ou superuser) gere a fila."""
+    if not getattr(user, "is_authenticated", False):
+        return False
+    if user.is_superuser or user.is_staff:
+        return True
+    return user.groups.filter(name=EQUIPE_GROUP_NAME).exists()
 
 
 def _pedido_fila_json(pedido: PedidoMusica) -> dict:
@@ -74,6 +88,48 @@ def _contagem_em_fila(evento_samba):
     return evento_samba.pedidos.filter(tocado=False, rejeitado=False).count()
 
 
+def _estado_pedido_utilizador(evento, user):
+    pedido = PedidoMusica.pedido_ativo_do_utilizador(evento, user)
+    return {
+        "ja_tem_pedido_em_fila": pedido is not None,
+        "pedido_ativo": _pedido_fila_json(pedido) if pedido else None,
+    }
+
+
+def _mensagem_pedido_duplicado(pedido):
+    musica = (pedido.musica if pedido else "").strip()
+    if musica:
+        return (
+            f"Já tem um pedido na fila («{musica}»). "
+            "Aguarde a roda tocar ou a mesa tratar esse pedido antes de enviar outro."
+        )
+    return (
+        "Já tem um pedido na fila. "
+        "Aguarde a roda tocar ou a mesa tratar esse pedido antes de enviar outro."
+    )
+
+
+def _resposta_pedido_duplicado(request, evento, pedido=None):
+    pedido = pedido or PedidoMusica.pedido_ativo_do_utilizador(evento, request.user)
+    msg = _mensagem_pedido_duplicado(pedido)
+    config = ConfiguracaoHome.get_solo()
+    em_fila = _contagem_em_fila(evento)
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse(
+            {
+                "ok": False,
+                "ja_tem_pedido_em_fila": True,
+                "error": msg,
+                "pedido_ativo": _pedido_fila_json(pedido) if pedido else None,
+                "total_em_fila": em_fila,
+                "limite_em_fila": config.limite_pedidos_em_fila,
+                "fila_cheia": em_fila >= config.limite_pedidos_em_fila,
+            },
+            status=403,
+        )
+    return HttpResponseRedirect(reverse("home:pedir_musica"))
+
+
 def _fila_limite_context(evento_samba):
     config = ConfiguracaoHome.get_solo()
     limite = config.limite_pedidos_em_fila
@@ -86,7 +142,7 @@ def _fila_limite_context(evento_samba):
     }
 
 
-def _evento_pedidos_context():
+def _evento_pedidos_context(user=None):
     evento_samba = (
         EventoSamba.objects.filter(ativo=True, aceita_pedidos=True)
         .order_by("-data")
@@ -105,6 +161,7 @@ def _evento_pedidos_context():
         "form_pedido": form,
         "motivos_rejeicao": MotivoRejeicao.objects.filter(ativo=True),
         **_fila_limite_context(evento_samba),
+        **_estado_pedido_utilizador(evento_samba, user),
     }
 
 
@@ -154,7 +211,7 @@ def service_worker(request):
 def pedir_musica(request):
     pode_marcar = user_pode_marcar(request.user)
     context = {
-        **_evento_pedidos_context(),
+        **_evento_pedidos_context(request.user),
         "pode_marcar": pode_marcar,
         "vapid_public_key": vapid_public_key() if pode_marcar else "",
         "nav_active": "pedidos",
@@ -289,6 +346,19 @@ def produto_detail(request, pk):
 
 @require_POST
 def pedido_musica(request):
+    if not request.user.is_authenticated:
+        login_url = reverse("home:login")
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse(
+                {
+                    "ok": False,
+                    "error": "Inicie sessão com a conta confirmada para pedir uma música.",
+                    "login_url": login_url,
+                },
+                status=403,
+            )
+        return HttpResponseRedirect(f"{login_url}?next={reverse('home:pedir_musica')}")
+
     evento_id = request.POST.get("evento_id")
     evento = get_object_or_404(
         EventoSamba,
@@ -297,6 +367,10 @@ def pedido_musica(request):
         aceita_pedidos=True,
     )
     config = ConfiguracaoHome.get_solo()
+    pedido_ativo = PedidoMusica.pedido_ativo_do_utilizador(evento, request.user)
+    if pedido_ativo:
+        return _resposta_pedido_duplicado(request, evento, pedido_ativo)
+
     em_fila = _contagem_em_fila(evento)
     if em_fila >= config.limite_pedidos_em_fila:
         msg = (
@@ -320,7 +394,13 @@ def pedido_musica(request):
     if form.is_valid():
         pedido = form.save(commit=False)
         pedido.evento = evento
-        pedido.save()
+        pedido.utilizador = request.user
+        pedido.pedido_por = nome_publico_utilizador(request.user)
+        try:
+            with transaction.atomic():
+                pedido.save()
+        except IntegrityError:
+            return _resposta_pedido_duplicado(request, evento)
         transaction.on_commit(
             lambda musica=pedido.musica, artista=pedido.artista, pk=pedido.pk: notificar_novo_pedido(
                 musica=musica,
@@ -434,6 +514,7 @@ def fila_pedidos_json(request, evento_id):
             "limite_em_fila": limite,
             "total_em_fila": total_em_fila,
             "fila_cheia": total_em_fila >= limite,
+            **_estado_pedido_utilizador(evento, request.user),
         }
     )
     response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"

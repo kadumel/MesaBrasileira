@@ -36,10 +36,13 @@
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("visible");
+            observer.unobserve(entry.target);
           }
         });
       },
-      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+      // threshold 0: any pixel in view is enough. A ratio like 0.12 never
+      // fires for tall stacked grids on mobile (event cards stay opacity: 0).
+      { threshold: 0, rootMargin: "0px 0px -8% 0px" }
     );
     revealEls.forEach((el) => observer.observe(el));
   } else {
@@ -383,35 +386,60 @@
     queueList.scrollTop = scrollTop;
   }
 
+  function valorCampo(data, ...keys) {
+    for (const key of keys) {
+      if (data && data[key] !== undefined) return data[key];
+    }
+    return undefined;
+  }
+
+  function eVerdade(valor) {
+    return valor === true || valor === 1 || valor === "1";
+  }
+
   function aplicarLimiteFila(data) {
     const aviso = document.getElementById("pedido-fila-aviso");
+    const avisoProprio = document.getElementById("pedido-proprio-aviso");
     const resumo = document.getElementById("pedido-fila-resumo");
     if (!form) return;
 
+    const limiteVal = valorCampo(data, "limite_em_fila", "limite_em_fila");
+    const totalVal = valorCampo(data, "total_em_fila", "total_em_fila");
     const limite =
-      data.limite_em_fila !== undefined
-        ? Number(data.limite_em_fila)
+      limiteVal !== undefined
+        ? Number(limiteVal)
         : Number(form.dataset.limiteEmFila || 0);
     const total =
-      data.total_em_fila !== undefined
-        ? Number(data.total_em_fila)
+      totalVal !== undefined
+        ? Number(totalVal)
         : Number(document.getElementById("pedido-fila-total")?.textContent || 0);
+    const cheiaFlag = valorCampo(data, "fila_cheia", "fila_cheia");
     const cheia =
-      data.fila_cheia === true ||
-      data.fila_cheia === 1 ||
-      data.fila_cheia === "1" ||
-      (limite > 0 && total >= limite);
+      eVerdade(cheiaFlag) ||
+      (cheiaFlag === undefined && limite > 0 && total >= limite);
+
+    const temPedidoFlag = valorCampo(
+      data,
+      "ja_tem_pedido_em_fila",
+      "ja_tem_pedido_em_fila"
+    );
+    const temPedido =
+      temPedidoFlag !== undefined
+        ? eVerdade(temPedidoFlag)
+        : form.dataset.jaTemPedido === "1";
 
     form.dataset.filaCheia = cheia ? "1" : "0";
-    form.classList.toggle("pedido-form--bloqueado", cheia);
+    form.dataset.jaTemPedido = temPedido ? "1" : "0";
+    const bloqueado = cheia || temPedido;
+    form.classList.toggle("pedido-form--bloqueado", bloqueado);
     if (resumo) {
       resumo.classList.toggle("pedido-fila-resumo--cheia", cheia);
     }
 
     const fieldset = form.querySelector(".pedido-form-fieldset");
     const btn = form.querySelector('button[type="submit"]');
-    if (fieldset) fieldset.disabled = cheia;
-    if (btn) btn.disabled = cheia;
+    if (fieldset) fieldset.disabled = bloqueado;
+    if (btn) btn.disabled = bloqueado;
 
     const totalEl = document.getElementById("pedido-fila-total");
     const limiteEl = document.getElementById("pedido-fila-limite");
@@ -419,6 +447,19 @@
     if (limiteEl) limiteEl.textContent = String(limite);
     if (aviso) {
       aviso.hidden = !cheia;
+    }
+    if (avisoProprio) {
+      avisoProprio.hidden = !temPedido;
+      const pedidoAtivo = valorCampo(data, "pedido_ativo", "pedido_ativo");
+      const musica = pedidoAtivo && pedidoAtivo.musica;
+      const musicaEl = document.getElementById("pedido-ativo-musica");
+      const wrap = document.getElementById("pedido-ativo-musica-wrap");
+      if (musica && musicaEl) {
+        musicaEl.textContent = musica;
+        if (wrap) wrap.hidden = false;
+      } else if (!temPedido && wrap) {
+        wrap.hidden = true;
+      }
     }
   }
 
@@ -434,14 +475,16 @@
         return;
       }
       const data = await res.json();
-      if (!Array.isArray(data.pedidos)) {
+      const pedidos = valorCampo(data, "pedidos", "pedidos");
+      if (!Array.isArray(pedidos)) {
         return;
       }
-      if (queuePanel && data.pode_marcar !== undefined) {
-        queuePanel.dataset.podeMarcar = data.pode_marcar ? "1" : "0";
+      const podeMarcar = valorCampo(data, "pode_marcar", "pode_marcar");
+      if (queuePanel && podeMarcar !== undefined) {
+        queuePanel.dataset.podeMarcar = eVerdade(podeMarcar) ? "1" : "0";
       }
       aplicarLimiteFila(data);
-      atualizarFila(data.pedidos);
+      atualizarFila(pedidos);
     } catch (_) {
       /* ignore polling errors */
     }
@@ -514,10 +557,19 @@
       limite_em_fila: form.dataset.limiteEmFila,
       total_em_fila: document.getElementById("pedido-fila-total")?.textContent,
       fila_cheia: form.dataset.filaCheia === "1",
+      ja_tem_pedido_em_fila: form.dataset.jaTemPedido === "1",
     });
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      if (form.dataset.jaTemPedido === "1") {
+        if (feedback) {
+          feedback.textContent =
+            "Já tem um pedido na fila. Aguarde a roda tocar ou a mesa tratar esse pedido.";
+          feedback.classList.add("error");
+        }
+        return;
+      }
       if (form.dataset.filaCheia === "1") {
         if (feedback) {
           feedback.textContent =
@@ -550,7 +602,15 @@
           }
           form.reset();
           await refreshQueue();
-        } else if (data.fila_cheia) {
+        } else if (data.ja_tem_pedido_em_fila || data.ja_tem_pedido_em_fila) {
+          aplicarLimiteFila(data);
+          if (feedback) {
+            feedback.textContent =
+              data.error ||
+              "Já tem um pedido na fila. Aguarde a roda tocar ou a mesa tratar esse pedido.";
+            feedback.classList.add("error");
+          }
+        } else if (data.fila_cheia || data.fila_cheia) {
           aplicarLimiteFila(data);
           if (feedback) {
             feedback.textContent =
@@ -558,7 +618,7 @@
             feedback.classList.add("error");
           }
         } else if (feedback) {
-          feedback.textContent = "Verifique os campos e tente novamente.";
+          feedback.textContent = data.error || "Verifique os campos e tente novamente.";
           feedback.classList.add("error");
         }
       } catch (_) {

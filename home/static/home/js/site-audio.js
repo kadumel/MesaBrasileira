@@ -7,6 +7,10 @@
   const STORAGE_KEY = "mesa-samba";
   const VOLUME = 0.42;
 
+  function getToggle() {
+    return document.querySelector("[data-site-audio-toggle]");
+  }
+
   function audioSrc() {
     const source = audio.querySelector("source");
     return (source && source.getAttribute("src")) || audio.currentSrc || "";
@@ -40,15 +44,27 @@
     }
   }
 
-  function persist() {
-    writeState({
-      time: audio.currentTime || 0,
-      wantPlay: true,
-    });
+  function persist(extra) {
+    writeState(
+      Object.assign({ time: audio.currentTime || 0 }, extra || {})
+    );
+  }
+
+  function wantsPlay() {
+    return readState().wantPlay !== false;
   }
 
   function isAudible() {
     return !audio.paused && !audio.muted && audio.volume > 0;
+  }
+
+  function syncToggle() {
+    const toggle = getToggle();
+    if (!toggle) return;
+    const playing = !audio.paused;
+    toggle.classList.toggle("is-playing", playing);
+    toggle.setAttribute("aria-pressed", playing ? "true" : "false");
+    toggle.setAttribute("aria-label", playing ? "Pausar música" : "Tocar música");
   }
 
   async function tryPlay() {
@@ -63,16 +79,27 @@
         audio.muted = false;
       } catch (_) {}
     }
-    persist();
+    persist({ wantPlay: true });
+    syncToggle();
     if (audio.paused) {
       throw new Error("autoplay-blocked");
     }
   }
 
+  function pauseForUser() {
+    persist({ wantPlay: false });
+    audio.pause();
+    syncToggle();
+  }
+
   function bindUnlock() {
-    const unlock = () => {
+    const unlock = (event) => {
+      if (event && event.target && event.target.closest("[data-site-audio-toggle]")) {
+        return;
+      }
       window.removeEventListener("pointerdown", unlock);
       window.removeEventListener("keydown", unlock);
+      if (!wantsPlay()) return;
       audio.muted = false;
       tryPlay().catch(() => {});
     };
@@ -95,6 +122,26 @@
   window.addEventListener("pagehide", persist);
   window.addEventListener("beforeunload", persist);
 
+  audio.addEventListener("play", syncToggle);
+  audio.addEventListener("pause", syncToggle);
+
+  document.addEventListener("click", (event) => {
+    const toggle = event.target && event.target.closest
+      ? event.target.closest("[data-site-audio-toggle]")
+      : null;
+    if (!toggle) return;
+    event.preventDefault();
+    if (audio.paused) {
+      tryPlay().catch(() => bindUnlock());
+    } else {
+      pauseForUser();
+    }
+  });
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", syncToggle);
+  }
+
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       persist();
@@ -106,9 +153,21 @@
     }
     if (audio.dataset.tabPause === "1") {
       delete audio.dataset.tabPause;
+      if (!wantsPlay()) {
+        syncToggle();
+        return;
+      }
       tryPlay().catch(() => bindUnlock());
     }
   });
+
+  syncToggle();
+
+  if (!wantsPlay()) {
+    audio.pause();
+    syncToggle();
+    return;
+  }
 
   tryPlay()
     .then(() => {
