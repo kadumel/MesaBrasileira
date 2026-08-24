@@ -1,0 +1,23 @@
+/* Jazzmin — logo da Mesa Brasileira em tamanho de marca, não em resolução nativa. */
+
+.login-page .login-logo {
+  font-size: 1.25rem;
+}
+
+.login-page .login-logo img {
+  width: 5.75rem;
+  height: 5.75rem;
+  max-width: 5.75rem;
+  max-height: 5.75rem;
+  margin: 0.35rem auto 0.85rem;
+  object-fit: contain;
+}
+
+.brand-image {
+  float: none;
+  max-height: 2rem !important;
+  max-width: 2rem !important;
+  width: 2rem !important;
+  height: 2rem !important;
+  object-fit: contain;
+}

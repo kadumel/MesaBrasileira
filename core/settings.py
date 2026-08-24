@@ -67,6 +67,7 @@ ALLOWED_HOSTS = _allowed if _allowed else (["*"] if DEBUG else [])
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -75,6 +76,95 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'home',
 ]
+
+JAZZMIN_SETTINGS = {
+    "site_title": "Mesa Brasileira",
+    "site_header": "Mesa Brasileira",
+    "site_brand": "Mesa Brasileira",
+    "site_logo": "home/img/logo-mb-pt.png",
+    "login_logo": "home/img/logo-mb-pt.png",
+    "site_logo_classes": "img-circle",
+    "site_icon": "home/img/logo-mb-pt.png",
+    "welcome_sign": "Administração da Mesa Brasileira",
+    "copyright": "Mesa Brasileira",
+    "search_model": ["auth.User", "home.PedidoMusica"],
+    "user_avatar": None,
+    "topmenu_links": [
+        {"name": "Site", "url": "/", "new_window": True},
+        {"name": "Pedir música", "url": "home:pedir_musica", "new_window": False},
+        {"model": "home.PedidoMusica"},
+    ],
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "hide_apps": [],
+    "order_with_respect_to": [
+        "home",
+        "home.PedidoMusica",
+        "home.EventoSamba",
+        "home.ConfiguracaoHome",
+        "auth",
+    ],
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "home.ConfiguracaoHome": "fas fa-sliders-h",
+        "home.PedidoMusica": "fas fa-music",
+        "home.EventoSamba": "fas fa-compact-disc",
+        "home.EventoDestaque": "fas fa-star",
+        "home.Produto": "fas fa-tshirt",
+        "home.Pedido": "fas fa-shopping-bag",
+        "home.SlideHome": "fas fa-images",
+        "home.Patrocinador": "fas fa-handshake",
+        "home.VideoEvento": "fas fa-video",
+        "home.SobrePagina": "fas fa-info-circle",
+        "home.Contato": "fas fa-address-card",
+        "home.MotivoRejeicao": "fas fa-ban",
+        "home.InscricaoPush": "fas fa-bell",
+        "home.PerfilUtilizador": "fas fa-id-badge",
+    },
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+    "related_modal_active": True,
+    "custom_css": "home/css/admin-jazzmin.css",
+    "use_google_fonts_cdn": True,
+    "show_ui_builder": False,
+    "show_theme_chooser": True,
+    "changeform_format": "horizontal_tabs",
+    "language_chooser": False,
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": "navbar-warning",
+    "accent": "accent-warning",
+    "navbar": "navbar-dark",
+    "no_navbar_border": False,
+    "navbar_fixed": True,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-dark-warning",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": True,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": True,
+    "theme": "lux",
+    "default_theme_mode": "light",
+    "button_classes": {
+        "primary": "btn-warning",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success",
+    },
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -265,6 +355,9 @@ if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+
+# Jazzmin: popups de objectos relacionados em modal (iframe).
+X_FRAME_OPTIONS = "SAMEORIGIN"
 
 STORAGES = {
     "default": {
