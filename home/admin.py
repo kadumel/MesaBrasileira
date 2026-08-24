@@ -259,6 +259,34 @@ class SlideHomeAdmin(admin.ModelAdmin):
     list_filter = ("ativo", "tipo")
     search_fields = ("titulo", "subtitulo")
     autocomplete_fields = ("evento",)
+    fieldsets = (
+        (
+            "Conteúdo",
+            {
+                "fields": (
+                    "titulo",
+                    "subtitulo",
+                    "tipo",
+                    "imagem",
+                    "imagem_url",
+                    "evento",
+                    "link",
+                    "ordem",
+                    "ativo",
+                ),
+            },
+        ),
+        (
+            "Exibir no banner",
+            {
+                "description": (
+                    "Desmarque o que não deve aparecer neste slide. "
+                    "Título e subtítulo continuam visíveis no admin."
+                ),
+                "fields": ("mostrar_tag", "mostrar_titulo", "mostrar_subtitulo"),
+            },
+        ),
+    )
 
     @admin.display(description="Imagem")
     def preview(self, obj):

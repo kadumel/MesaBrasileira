@@ -89,6 +89,21 @@ class SlideHome(models.Model):
 
     titulo = models.CharField(max_length=200)
     subtitulo = models.CharField(max_length=300, blank=True)
+    mostrar_tag = models.BooleanField(
+        default=True,
+        verbose_name="Mostrar tag",
+        help_text="Exibe a etiqueta Evento ou Destaque no banner.",
+    )
+    mostrar_titulo = models.BooleanField(
+        default=True,
+        verbose_name="Mostrar título",
+        help_text="Exibe o título no banner. Pode ficar só no admin.",
+    )
+    mostrar_subtitulo = models.BooleanField(
+        default=True,
+        verbose_name="Mostrar subtítulo",
+        help_text="Exibe o subtítulo no banner. Pode ficar só no admin.",
+    )
     imagem = models.ImageField(upload_to="slides/", blank=True, null=True)
     imagem_url = models.URLField(
         max_length=URL_MAX_LENGTH,
@@ -136,6 +151,16 @@ class SlideHome(models.Model):
     @property
     def tem_link(self):
         return bool(self.url_destino and self.url_destino != "#")
+
+    @property
+    def exibir_legenda(self):
+        if self.mostrar_tag:
+            return True
+        if self.mostrar_titulo and self.titulo:
+            return True
+        if self.mostrar_subtitulo and (self.subtitulo or "").strip():
+            return True
+        return False
 
 
 class Patrocinador(models.Model):

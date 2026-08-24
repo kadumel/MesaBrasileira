@@ -8,18 +8,24 @@
   {% else %}
   <div class="banner-slide-placeholder"></div>
   {% endif %}
+  {% if slide.exibir_legenda %}
   <div class="banner-slide-overlay" aria-hidden="true"></div>
   <div class="banner-slide-caption container">
-    {% if slide.tipo == 'evento' %}
-    <span class="banner-badge">Evento</span>
-    {% else %}
-    <span class="banner-badge banner-badge--ad">Destaque</span>
+    {% if slide.mostrar_tag %}
+      {% if slide.tipo == 'evento' %}
+      <span class="banner-badge">Evento</span>
+      {% else %}
+      <span class="banner-badge banner-badge--ad">Destaque</span>
+      {% endif %}
     {% endif %}
+    {% if slide.mostrar_titulo and slide.titulo %}
     <h2 class="banner-slide-title">{{ slide.titulo }}</h2>
-    {% if slide.subtitulo %}
+    {% endif %}
+    {% if slide.mostrar_subtitulo and slide.subtitulo %}
     <p class="banner-slide-sub">{{ slide.subtitulo }}</p>
     {% endif %}
   </div>
+  {% endif %}
 {% if slide.tem_link %}
 </a>
 {% else %}

@@ -176,6 +176,7 @@
 .roda-item-link {
   display: block;
   position: relative;
+  overflow: visible;
   color: inherit;
   text-decoration: none;
   border-radius: 50%;
@@ -191,7 +192,7 @@
 
 .roda-item-link:hover img,
 .roda-item-link:focus-visible img {
-  transform: scale(1.07);
+  transform: rotate(var(--rot, 0deg)) scaleX(var(--flip, 1)) scale(1.07);
   border-color: var(--green);
   box-shadow: 0 14px 24px rgba(61, 43, 26, 0.34);
 }
@@ -201,7 +202,7 @@
 }
 
 .roda-item-slot {
-  transform: translate(-50%, -50%) scale(var(--s)) rotate(var(--rot)) scaleX(var(--flip, 1));
+  transform: translate(-50%, -50%) scale(var(--s));
   transform-origin: center;
 }
 
@@ -216,6 +217,7 @@
   height: auto;
   display: block;
   user-select: none;
+  transform: rotate(var(--rot, 0deg)) scaleX(var(--flip, 1));
 }
 
 .roda-item--instrument img {
@@ -236,43 +238,69 @@
   object-position: center 46%;
 }
 
-.roda-item-name {
-  position: absolute;
-  left: 50%;
-  bottom: -1.35rem;
-  transform: translateX(-50%) rotate(calc(-1 * var(--rot, 0deg)));
-  white-space: nowrap;
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--brown);
-  text-shadow: 0 1px 0 var(--cream-light);
+.roda-item--retrato img {
+  object-position: center 42%;
 }
 
-.roda-item-link .roda-item-name {
-  bottom: auto;
-  top: calc(100% + 0.35rem);
+.roda-item-caption {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 0.28rem);
+  width: max-content;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding-left: 0.03em;
+  color: var(--brown);
+  text-shadow: 0 1px 0 var(--cream-light);
+  pointer-events: none;
+  text-align: center;
+}
+
+.roda-item-tip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 0.32rem);
+  z-index: 4;
+  width: max-content;
   padding: 0.22rem 0.55rem;
   background: var(--cream-light);
   border: 1px solid var(--border);
   border-radius: 999px;
   box-shadow: 0 6px 14px rgba(61, 43, 26, 0.16);
-  text-shadow: none;
+  white-space: nowrap;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--brown);
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
-  transform: translateX(-50%) rotate(calc(-1 * var(--rot, 0deg))) translateY(4px);
+  transform: translateX(-50%) translateY(4px);
   transition:
     opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
     visibility 0.28s;
 }
 
-.roda-item-link:hover .roda-item-name,
-.roda-item-link:focus-visible .roda-item-name {
+.roda-item-link:hover .roda-item-tip,
+.roda-item-link:focus-visible .roda-item-tip {
   opacity: 1;
   visibility: visible;
-  transform: translateX(-50%) rotate(calc(-1 * var(--rot, 0deg))) translateY(0);
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (hover: none) {
+  .roda-item-link .roda-item-tip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 .roda-hero-copy {
@@ -403,18 +431,21 @@
     --w: 5.6rem;
   }
 
-  .roda-item-name {
-    font-size: 0.55rem;
-    bottom: -1.15rem;
+  .roda-item-caption {
+    font-size: 0.5rem;
+    top: calc(100% + 0.22rem);
+    white-space: normal;
+    max-width: 6.2rem;
+    line-height: 1.15;
   }
 
-  .roda-item-link .roda-item-name {
+  .roda-item-tip {
     display: block;
     opacity: 1;
     visibility: visible;
-    font-size: 0.52rem;
-    padding: 0.14rem 0.42rem;
-    transform: translateX(-50%) rotate(calc(-1 * var(--rot, 0deg))) translateY(0);
+    font-size: 0.5rem;
+    padding: 0.12rem 0.4rem;
+    transform: translateX(-50%) translateY(0);
   }
 
   .roda-hero-publico {
@@ -448,21 +479,20 @@
     font-size: 0.95rem;
   }
 
-  .roda-item-name {
-    display: none;
+  .roda-item-caption {
+    display: block;
+    font-size: 0.48rem;
+    max-width: 5.4rem;
   }
 
-  .roda-item-link .roda-item-name {
+  .roda-item-tip {
     display: block;
     opacity: 1;
     visibility: visible;
-    white-space: normal;
-    max-width: 5.6rem;
-    text-align: center;
-    line-height: 1.15;
-    font-size: 0.5rem;
-    padding: 0.12rem 0.38rem;
-    transform: translateX(-50%) rotate(calc(-1 * var(--rot, 0deg))) translateY(0);
+    white-space: nowrap;
+    font-size: 0.48rem;
+    padding: 0.1rem 0.36rem;
+    transform: translateX(-50%) translateY(0);
   }
 
   .roda-item--sambista {
@@ -502,13 +532,13 @@
   }
 
   .roda-item-link img,
-  .roda-item-link .roda-item-name {
+  .roda-item-link .roda-item-tip {
     transition: none;
   }
 
   .roda-item-link:hover img,
   .roda-item-link:focus-visible img {
-    transform: none;
+    transform: rotate(var(--rot, 0deg)) scaleX(var(--flip, 1));
   }
 
   .roda-hero:not(.is-animated) .roda-item-motion,

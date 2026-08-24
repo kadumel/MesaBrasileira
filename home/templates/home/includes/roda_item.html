@@ -11,7 +11,8 @@
     <div class="roda-item-motion">
       <div class="roda-item-parallax">
         {% if href %}
-        <a href="{{ href }}" class="roda-item-link" aria-label="Ir para {{ page_name }}">
+        <a href="{{ href }}" class="roda-item-link" aria-label="{{ caption|default:page_name }} — ir para {{ page_name }}">
+          <span class="roda-item-tip">{{ page_name }}</span>
           <img
             src="{% static src %}{% if cache %}?v={{ cache }}{% endif %}"
             alt="{{ alt }}"
@@ -19,7 +20,9 @@
             height="{{ ih }}"
             decoding="async"
           >
-          <span class="roda-item-name" aria-hidden="true">{{ page_name }}</span>
+          {% if caption %}
+          <span class="roda-item-caption">{{ caption }}</span>
+          {% endif %}
         </a>
         {% else %}
         <img
@@ -30,7 +33,7 @@
           decoding="async"
         >
         {% if caption %}
-        <span class="roda-item-name">{{ caption }}</span>
+        <span class="roda-item-caption">{{ caption }}</span>
         {% endif %}
         {% endif %}
       </div>
