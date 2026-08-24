@@ -1,6 +1,6 @@
 {% load static %}
 <figure
-  class="roda-item roda-item--{{ kind }}{% if href %} roda-item--link{% endif %}"
+  class="roda-item roda-item--{{ kind }}{% if href %} roda-item--link{% endif %}{% if extra_class %} {{ extra_class }}{% endif %}"
   data-roda-item
   data-kind="{{ kind }}"
   data-order="{{ order }}"

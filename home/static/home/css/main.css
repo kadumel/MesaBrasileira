@@ -2042,10 +2042,6 @@ a.patrocinador-card:hover {
   padding-bottom: 4rem;
 }
 
-.section-sobre .sobre-topico--intro {
-  margin-bottom: -0.5rem;
-}
-
 .page-hero h1 {
   font-family: var(--font-display);
   font-size: clamp(2.75rem, 8vw, 4rem);
@@ -2071,12 +2067,6 @@ a.patrocinador-card:hover {
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
-}
-
-.sobre-topico--intro .sobre-topico-conteudo {
-  font-size: 1.12rem;
-  font-weight: 500;
-  color: var(--brown-deep);
 }
 
 .sobre-topico-titulo {

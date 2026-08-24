@@ -272,33 +272,27 @@ class SlideHomeAdmin(admin.ModelAdmin):
 class SobrePaginaAdmin(admin.ModelAdmin):
     fieldsets = (
         (
-            "Introdução",
+            "Quem Somos",
             {
-                "fields": ("subtitulo",),
+                "fields": ("texto_quem_somos",),
             },
         ),
         (
-            "Samba na rua, do jeito que tem que ser.",
+            "Uma roda feita por todos",
             {
-                "fields": ("texto_samba_na_rua",),
+                "fields": ("texto_roda_por_todos",),
             },
         ),
         (
-            "Nossa essência",
+            "Em respeito ao nosso samba",
             {
-                "fields": ("texto_nossa_essencia",),
+                "fields": ("texto_respeito_samba",),
             },
         ),
         (
-            "O samba é o nosso ponto de encontro",
+            "Cultura em primeiro lugar",
             {
-                "fields": ("texto_ponto_encontro",),
-            },
-        ),
-        (
-            "Mais que música",
-            {
-                "fields": ("texto_mais_que_musica",),
+                "fields": ("texto_cultura_primeiro",),
             },
         ),
     )

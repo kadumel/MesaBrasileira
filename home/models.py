@@ -757,62 +757,55 @@ class VideoEvento(models.Model):
 class SobrePagina(models.Model):
     """Textos da página «Sobre» (singleton)."""
 
-    subtitulo = models.TextField(
+    texto_quem_somos = models.TextField(
         blank=True,
-        verbose_name="Introdução",
-        help_text="Texto introdutório da página (primeira secção). Deixe linha em branco entre parágrafos.",
-    )
-    texto_samba_na_rua = models.TextField(
-        blank=True,
-        verbose_name="Samba na rua, do jeito que tem que ser.",
+        verbose_name="Quem Somos",
         help_text="Texto desta secção. Deixe linha em branco entre parágrafos.",
     )
-    texto_nossa_essencia = models.TextField(
+    texto_roda_por_todos = models.TextField(
         blank=True,
-        verbose_name="Nossa essência",
+        verbose_name="Uma roda feita por todos",
         help_text="Texto desta secção. Deixe linha em branco entre parágrafos.",
     )
-    texto_ponto_encontro = models.TextField(
+    texto_respeito_samba = models.TextField(
         blank=True,
-        verbose_name="O samba é o nosso ponto de encontro",
+        verbose_name="Em respeito ao nosso samba",
         help_text="Texto desta secção. Deixe linha em branco entre parágrafos.",
     )
-    texto_mais_que_musica = models.TextField(
+    texto_cultura_primeiro = models.TextField(
         blank=True,
-        verbose_name="Mais que música",
+        verbose_name="Cultura em primeiro lugar",
         help_text="Texto desta secção. Deixe linha em branco entre parágrafos.",
     )
 
     TOPICOS = (
-        ("Samba na rua, do jeito que tem que ser.", "texto_samba_na_rua"),
-        ("Nossa essência", "texto_nossa_essencia"),
-        ("O samba é o nosso ponto de encontro", "texto_ponto_encontro"),
-        ("Mais que música", "texto_mais_que_musica"),
+        ("Quem Somos", "texto_quem_somos"),
+        ("Uma roda feita por todos", "texto_roda_por_todos"),
+        ("Em respeito ao nosso samba", "texto_respeito_samba"),
+        ("Cultura em primeiro lugar", "texto_cultura_primeiro"),
     )
 
-    TEXTO_PADRAO_SUBTITULO = "Em respeito ao nosso samba."
-
-    TEXTO_PADRAO_SAMBA_NA_RUA = (
+    TEXTO_PADRAO_QUEM_SOMOS = (
         "O nosso projeto nasceu da vontade de fazer aquilo que o samba sempre soube fazer: "
         "juntar pessoas.\n\n"
         "Mais do que uma apresentação musical, queremos criar encontros. Levar o samba para a "
         "rua, aproximar músicos e público e transformar cada roda num espaço de alegria, amizade, "
         "cultura e celebração."
     )
-    TEXTO_PADRAO_NOSSA_ESSENCIA = (
+    TEXTO_PADRAO_RODA_POR_TODOS = (
         "Acreditamos no samba feito perto das pessoas.\n\n"
         "Sem distância entre quem toca e quem canta. Aqui, o público também faz parte da roda: "
         "canta, bate palma, dança e ajuda a construir a energia de cada encontro.\n\n"
         "Cavaquinho, banjo, pandeiro, surdo, tantan, repique, reco-reco e muitas vozes se "
         "encontram para manter viva uma das maiores expressões da cultura popular brasileira."
     )
-    TEXTO_PADRAO_PONTO_ENCONTRO = (
+    TEXTO_PADRAO_RESPEITO_SAMBA = (
         "Nosso repertório passeia por diferentes gerações do samba, celebrando grandes "
         "compositores e intérpretes e mantendo espaço para novas histórias e novas músicas.\n\n"
         "Do partido-alto ao samba de roda, dos clássicos que todo mundo conhece às músicas que "
         "merecem ser redescobertas, queremos preservar a essência sem deixar o samba parar no tempo."
     )
-    TEXTO_PADRAO_MAIS_QUE_MUSICA = (
+    TEXTO_PADRAO_CULTURA_PRIMEIRO = (
         "Para nós, samba é encontro.\n\n"
         "É chegar sem conhecer ninguém e terminar cantando junto.\n\n"
         "É a palma da mão marcando o ritmo.\n\n"
@@ -843,11 +836,6 @@ class SobrePagina(models.Model):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
 
-    @property
-    def subtitulo_exibir(self):
-        texto = (self.subtitulo or "").strip()
-        return texto or self.TEXTO_PADRAO_SUBTITULO
-
     def _texto_topico(self, field_name, padrao):
         valor = (getattr(self, field_name) or "").strip()
         return valor or padrao
@@ -855,27 +843,18 @@ class SobrePagina(models.Model):
     @property
     def topicos_exibir(self):
         padroes = {
-            "texto_samba_na_rua": self.TEXTO_PADRAO_SAMBA_NA_RUA,
-            "texto_nossa_essencia": self.TEXTO_PADRAO_NOSSA_ESSENCIA,
-            "texto_ponto_encontro": self.TEXTO_PADRAO_PONTO_ENCONTRO,
-            "texto_mais_que_musica": self.TEXTO_PADRAO_MAIS_QUE_MUSICA,
+            "texto_quem_somos": self.TEXTO_PADRAO_QUEM_SOMOS,
+            "texto_roda_por_todos": self.TEXTO_PADRAO_RODA_POR_TODOS,
+            "texto_respeito_samba": self.TEXTO_PADRAO_RESPEITO_SAMBA,
+            "texto_cultura_primeiro": self.TEXTO_PADRAO_CULTURA_PRIMEIRO,
         }
-        topicos = [
-            {
-                "titulo": "",
-                "conteudo": self.subtitulo_exibir,
-                "intro": True,
-            }
-        ]
-        topicos.extend(
+        return [
             {
                 "titulo": titulo,
                 "conteudo": self._texto_topico(campo, padroes[campo]),
-                "intro": False,
             }
             for titulo, campo in self.TOPICOS
-        )
-        return topicos
+        ]
 
 
 class ConfiguracaoHome(models.Model):

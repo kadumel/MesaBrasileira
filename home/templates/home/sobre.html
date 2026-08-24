@@ -15,10 +15,8 @@
   <div class="container">
     <div class="sobre-topicos reveal-stagger">
       {% for topico in sobre_pagina.topicos_exibir %}
-      <article class="sobre-topico{% if topico.intro %} sobre-topico--intro{% endif %}">
-        {% if topico.titulo %}
+      <article class="sobre-topico">
         <h2 class="sobre-topico-titulo">{{ topico.titulo }}</h2>
-        {% endif %}
         <div class="sobre-topico-conteudo">{{ topico.conteudo|linebreaksbr }}</div>
       </article>
       {% endfor %}
