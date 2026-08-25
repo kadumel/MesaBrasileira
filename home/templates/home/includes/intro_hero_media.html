@@ -2,17 +2,66 @@
 <div class="intro-hero-logo">
   {% if config_home.exibir_video_arquivo %}
   <div class="intro-hero-video reveal">
-    <video
-      class="intro-hero-video-player"
-      controls
-      playsinline
-      preload="metadata"
-      {% if config_home.video_poster %}poster="{{ config_home.video_poster.url }}"{% endif %}
+    <button
+      type="button"
+      class="intro-hero-video-trigger"
+      data-video-modal-open
+      aria-haspopup="dialog"
+      aria-controls="intro-video-modal"
     >
-      <source src="{{ config_home.video_arquivo.url }}" type="{{ config_home.video_content_type }}">
-      O seu browser não suporta vídeo HTML5.
-    </video>
+      <span class="visually-hidden">Reproduzir vídeo</span>
+      {% if config_home.video_poster %}
+      <img
+        src="{{ config_home.video_poster.url }}"
+        alt=""
+        class="intro-hero-video-player"
+        loading="lazy"
+      >
+      {% else %}
+      <video
+        class="intro-hero-video-player"
+        muted
+        playsinline
+        preload="metadata"
+        aria-hidden="true"
+        tabindex="-1"
+      >
+        <source src="{{ config_home.video_arquivo.url }}" type="{{ config_home.video_content_type }}">
+      </video>
+      {% endif %}
+      <span class="intro-hero-instagram-play" aria-hidden="true">
+        <span class="intro-hero-instagram-icon">▶</span>
+        <span>Assistir</span>
+      </span>
+    </button>
   </div>
+  <dialog
+    id="intro-video-modal"
+    class="video-modal"
+    aria-labelledby="intro-video-modal-title"
+  >
+    <div class="video-modal-frame">
+      <button
+        type="button"
+        class="video-modal-close"
+        data-video-modal-close
+        aria-label="Fechar vídeo"
+      >
+        ×
+      </button>
+      <h2 id="intro-video-modal-title" class="visually-hidden">Vídeo Mesa Brasileira</h2>
+      <video
+        class="video-modal-player"
+        controls
+        playsinline
+        preload="metadata"
+        {% if config_home.video_poster %}poster="{{ config_home.video_poster.url }}"{% endif %}
+      >
+        <source src="{{ config_home.video_arquivo.url }}" type="{{ config_home.video_content_type }}">
+        O seu browser não suporta vídeo HTML5.
+      </video>
+    </div>
+  </dialog>
   {% elif config_home.instagram_usar_imagem_link %}
   <div class="intro-hero-video reveal">
     <a
