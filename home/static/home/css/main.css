@@ -2768,11 +2768,31 @@ main:not(.page-main) > .site-messages {
   }
 
   .banner-swiper {
-    height: min(68vh, 36rem);
+    height: auto;
+    min-height: 140px;
+  }
+
+  .banner-swiper .swiper-slide,
+  .banner-slide {
+    height: auto;
   }
 
   .banner-slide-img {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    max-height: 85vh;
     object-fit: contain;
+    margin-inline: auto;
+  }
+
+  .banner-slide-placeholder {
+    position: relative;
+    inset: auto;
+    min-height: 160px;
+    aspect-ratio: 16 / 9;
   }
 
   .banner-slide--link:hover .banner-slide-img {

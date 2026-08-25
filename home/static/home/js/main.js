@@ -50,10 +50,12 @@
   }
 
   if (typeof Swiper !== "undefined" && document.querySelector(".banner-swiper")) {
-    new Swiper(".banner-swiper", {
+    const bannerMobile = window.matchMedia("(max-width: 900px)");
+    const bannerSwiper = new Swiper(".banner-swiper", {
       slidesPerView: 1,
       loop: true,
       speed: 600,
+      autoHeight: bannerMobile.matches,
       autoplay: {
         delay: 5500,
         disableOnInteraction: false,
@@ -66,6 +68,10 @@
         nextEl: ".banner-next",
         prevEl: ".banner-prev",
       },
+    });
+    bannerMobile.addEventListener("change", (event) => {
+      bannerSwiper.params.autoHeight = event.matches;
+      bannerSwiper.update();
     });
   }
 
