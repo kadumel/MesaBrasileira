@@ -1684,16 +1684,17 @@ a:hover {
 }
 
 .banner-swiper .swiper-slide {
-  height: auto;
+  height: 100%;
 }
 
 .banner-slide {
   position: relative;
   display: block;
   width: 100%;
-  height: clamp(240px, 34vw, 440px);
+  height: 100%;
   overflow: hidden;
   color: var(--cream-light);
+  background: var(--brown-deep);
 }
 
 .banner-slide--link {
@@ -1706,9 +1707,13 @@ a:hover {
 }
 
 .banner-slide-img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
+  max-width: none;
   object-fit: cover;
+  object-position: center;
   transition: transform 0.8s ease;
 }
 
@@ -1717,6 +1722,8 @@ a:hover {
 }
 
 .banner-slide-placeholder {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   background: linear-gradient(135deg, var(--green), var(--brown));
@@ -2758,6 +2765,18 @@ main:not(.page-main) > .site-messages {
     transform: translateY(0);
     opacity: 1;
     pointer-events: auto;
+  }
+
+  .banner-swiper {
+    height: min(68vh, 36rem);
+  }
+
+  .banner-slide-img {
+    object-fit: contain;
+  }
+
+  .banner-slide--link:hover .banner-slide-img {
+    transform: none;
   }
 
   .banner-slide-caption {
