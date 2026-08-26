@@ -718,6 +718,20 @@
     setInterval(refreshQueue, 12000);
   }
 
+  function focusHashField() {
+    const id = decodeURIComponent((window.location.hash || "").replace(/^#/, ""));
+    if (!id) return;
+    const field = document.getElementById(id);
+    if (!field || !field.matches("input, textarea, select")) return;
+    const focus = () => field.focus({ preventScroll: false });
+    focus();
+    window.setTimeout(focus, 300);
+  }
+
+  focusHashField();
+  window.addEventListener("hashchange", focusHashField);
+  window.addEventListener("pageshow", focusHashField);
+
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {});

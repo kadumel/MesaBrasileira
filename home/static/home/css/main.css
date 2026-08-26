@@ -2247,6 +2247,33 @@ a.patrocinador-card:hover {
   padding-block: 0.5rem;
 }
 
+.parceiros-cta {
+  margin: 2.5rem 0 0;
+  text-align: center;
+}
+
+.parceiros-cta a {
+  display: inline-block;
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  color: var(--brown);
+  text-decoration: none;
+  border-bottom: 1.5px solid var(--brown);
+  padding-bottom: 0.12rem;
+  transition: color var(--transition), border-color var(--transition);
+}
+
+.parceiros-cta a:hover,
+.parceiros-cta a:focus-visible {
+  color: var(--green);
+  border-bottom-color: var(--green);
+}
+
+#contato-nome {
+  scroll-margin-top: calc(var(--header-h) + 1.25rem);
+}
+
 .section-events-preview {
   background: var(--cream);
 }

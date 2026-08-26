@@ -295,7 +295,12 @@ class ContatoForm(forms.Form):
         max_length=120,
         label="Nome",
         widget=forms.TextInput(
-            attrs={"class": "form-input", "autocomplete": "name", "placeholder": "O seu nome"}
+            attrs={
+                "class": "form-input",
+                "autocomplete": "name",
+                "placeholder": "O seu nome",
+                "id": "contato-nome",
+            }
         ),
     )
     email = forms.EmailField(
