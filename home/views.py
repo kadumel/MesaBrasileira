@@ -13,6 +13,7 @@ from django.views.decorators.cache import cache_control
 from django.views.decorators.http import require_GET, require_POST
 
 from .constants import INSTAGRAM_URL
+from .roda_sambistas import escolher_sambistas_roda, pool_for_frontend
 from .cart import cart_count
 from .forms import (
     AdicionarCarrinhoForm,
@@ -174,6 +175,8 @@ def index(request):
         "eventos_destaque": EventoDestaque.objects.filter(ativo=True, destaque=True)[:6],
         "produtos": produtos_qs[:6],
         "total_produtos": produtos_qs.count(),
+        "roda_sambistas": escolher_sambistas_roda(),
+        "roda_sambista_pool": pool_for_frontend(),
         "nav_active": "home",
     }
     return render(request, "home/index.html", context)
