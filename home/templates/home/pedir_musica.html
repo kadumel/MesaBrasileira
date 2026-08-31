@@ -44,6 +44,9 @@
       </button>
     </aside>
     {% endif %}
+    {% if pode_marcar and stats_admin %}
+    {% include "home/includes/equipe_stats.html" %}
+    {% endif %}
     {% include "home/includes/pedidos_roda.html" %}
   </div>
 </section>

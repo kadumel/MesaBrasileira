@@ -8,7 +8,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from home.models import EventoSamba, InscricaoPush, PedidoMusica
+from home.models import EventoSamba, InscricaoPush, MotivoRejeicao, PedidoMusica
 from home.services.pedido_push import _corpo_pedido, _instancia_vapid, gerar_par_vapid
 
 
@@ -254,3 +254,96 @@ class PedidoMusicaLimitePorUtilizadorTests(TestCase):
             PedidoMusica.objects.filter(utilizador=self.publico).count(),
             2,
         )
+
+
+class EquipeStatsPedirMusicaTests(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.admin = User.objects.create_user(
+            username="mesa",
+            password="senha-teste",
+            is_staff=True,
+        )
+        grupo, _ = Group.objects.get_or_create(name="Equipe")
+        self.admin.groups.add(grupo)
+        self.publico = User.objects.create_user(
+            username="publico@example.com",
+            email="publico@example.com",
+            password="senha-teste",
+            first_name="Daniel",
+        )
+        self.outro = User.objects.create_user(
+            username="outro@example.com",
+            email="outro@example.com",
+            password="senha-teste",
+            first_name="Leo",
+        )
+        self.evento = EventoSamba.objects.create(
+            titulo="Roda stats",
+            data=timezone.now(),
+            local="Lisboa",
+            ativo=True,
+            aceita_pedidos=True,
+        )
+        motivo = MotivoRejeicao.objects.create(nome="Já tocámos", ordem=1)
+        PedidoMusica.objects.create(
+            evento=self.evento,
+            musica="Coisinha do Pai",
+            pedido_por="Daniel",
+            utilizador=self.publico,
+            tocado=True,
+        )
+        PedidoMusica.objects.create(
+            evento=self.evento,
+            musica="Andança",
+            pedido_por="Leo",
+            utilizador=self.outro,
+            rejeitado=True,
+            motivo_rejeicao=motivo,
+        )
+        PedidoMusica.objects.create(
+            evento=self.evento,
+            musica="Canto de Ossanha",
+            pedido_por="Daniel",
+            utilizador=self.publico,
+        )
+
+    def test_publico_nao_ve_cards(self):
+        self.client.force_login(self.publico)
+        res = self.client.get(reverse("home:pedir_musica"))
+        self.assertEqual(res.status_code, 200)
+        self.assertNotContains(res, "Clientes cadastrados")
+        self.assertNotContains(res, 'id="equipe-stats"')
+
+    def test_admin_ve_cards_com_numeros(self):
+        self.client.force_login(self.admin)
+        res = self.client.get(reverse("home:pedir_musica"))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, "Clientes cadastrados")
+        self.assertContains(res, "Total de pedidos")
+        self.assertContains(res, "Pedidos tocados")
+        self.assertContains(res, "Pedidos rejeitados")
+        self.assertContains(res, "Percentual tocados")
+        self.assertEqual(res.context["stats_admin"]["total_clientes"], 2)
+        self.assertEqual(res.context["stats_admin"]["total_pedidos"], 3)
+        self.assertEqual(res.context["stats_admin"]["pedidos_tocados"], 1)
+        self.assertEqual(res.context["stats_admin"]["pedidos_rejeitados"], 1)
+        self.assertEqual(res.context["stats_admin"]["percentual_tocados"], 33)
+        self.assertEqual(res.context["stats_admin"]["percentual_rejeitados"], 33)
+
+    def test_json_fila_inclui_stats_so_para_equipa(self):
+        url = reverse("home:fila_pedidos", args=[self.evento.pk])
+        publico = self.client.get(url)
+        self.assertEqual(publico.status_code, 200)
+        self.assertNotIn("stats_admin", publico.json())
+
+        self.client.force_login(self.admin)
+        admin = self.client.get(url)
+        self.assertEqual(admin.status_code, 200)
+        stats = admin.json()["stats_admin"]
+        self.assertEqual(stats["total_clientes"], 2)
+        self.assertEqual(stats["total_pedidos"], 3)
+        self.assertEqual(stats["pedidos_tocados"], 1)
+        self.assertEqual(stats["pedidos_rejeitados"], 1)
+        self.assertEqual(stats["percentual_tocados"], 33)
+

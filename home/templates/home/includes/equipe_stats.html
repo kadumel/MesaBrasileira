@@ -1,0 +1,50 @@
+<section
+  class="equipe-stats reveal-stagger"
+  id="equipe-stats"
+  aria-label="Resumo da mesa"
+>
+  <article class="equipe-stat equipe-stat--clientes">
+    <p class="equipe-stat-label">Clientes cadastrados</p>
+    <p class="equipe-stat-value" id="stat-clientes">{{ stats_admin.total_clientes }}</p>
+    <p class="equipe-stat-hint">Contas públicas na roda</p>
+  </article>
+  <article class="equipe-stat equipe-stat--pedidos">
+    <p class="equipe-stat-label">Total de pedidos</p>
+    <p class="equipe-stat-value" id="stat-pedidos">{{ stats_admin.total_pedidos }}</p>
+    <p class="equipe-stat-hint">Neste evento</p>
+  </article>
+  <article class="equipe-stat equipe-stat--tocados">
+    <p class="equipe-stat-label">Pedidos tocados</p>
+    <p class="equipe-stat-value" id="stat-tocados">{{ stats_admin.pedidos_tocados }}</p>
+    <p class="equipe-stat-hint">Já saíram na roda</p>
+  </article>
+  <article class="equipe-stat equipe-stat--rejeitados">
+    <p class="equipe-stat-label">Pedidos rejeitados</p>
+    <p class="equipe-stat-value" id="stat-rejeitados">{{ stats_admin.pedidos_rejeitados }}</p>
+    <p class="equipe-stat-hint">Recusados pela mesa</p>
+  </article>
+  <article class="equipe-stat equipe-stat--percentual">
+    <p class="equipe-stat-label">Percentual tocados</p>
+    <p class="equipe-stat-value" id="stat-percentual">{{ stats_admin.percentual_tocados }}%</p>
+    <div class="equipe-stat-bar" aria-hidden="true">
+      <span
+        class="equipe-stat-bar-seg equipe-stat-bar-seg--tocados"
+        id="stat-bar-tocados"
+        style="width: {{ stats_admin.percentual_tocados }}%"
+      ></span>
+      <span
+        class="equipe-stat-bar-seg equipe-stat-bar-seg--rejeitados"
+        id="stat-bar-rejeitados"
+        style="width: {{ stats_admin.percentual_rejeitados }}%"
+      ></span>
+      <span
+        class="equipe-stat-bar-seg equipe-stat-bar-seg--fila"
+        id="stat-bar-fila"
+        style="width: {{ stats_admin.percentual_em_fila }}%"
+      ></span>
+    </div>
+    <p class="equipe-stat-hint" id="stat-percentual-hint">
+      {{ stats_admin.percentual_tocados }}% tocados · {{ stats_admin.percentual_rejeitados }}% rejeitados
+    </p>
+  </article>
+</section>

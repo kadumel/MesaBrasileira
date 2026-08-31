@@ -549,6 +549,36 @@
     }
   }
 
+  function aplicarStatsAdmin(data) {
+    const stats = valorCampo(data, "stats_admin");
+    const wrap = document.getElementById("equipe-stats");
+    if (!wrap || !stats) return;
+
+    const setText = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = String(value);
+    };
+    const setWidth = (id, pct) => {
+      const el = document.getElementById(id);
+      if (el) el.style.width = `${Number(pct) || 0}%`;
+    };
+
+    setText("stat-clientes", stats.total_clientes);
+    setText("stat-pedidos", stats.total_pedidos);
+    setText("stat-tocados", stats.pedidos_tocados);
+    setText("stat-rejeitados", stats.pedidos_rejeitados);
+    setText("stat-percentual", `${stats.percentual_tocados}%`);
+
+    const hint = document.getElementById("stat-percentual-hint");
+    if (hint) {
+      hint.textContent = `${stats.percentual_tocados}% tocados · ${stats.percentual_rejeitados}% rejeitados`;
+    }
+
+    setWidth("stat-bar-tocados", stats.percentual_tocados);
+    setWidth("stat-bar-rejeitados", stats.percentual_rejeitados);
+    setWidth("stat-bar-fila", stats.percentual_em_fila);
+  }
+
   async function refreshQueue() {
     if (!form || refreshPaused || !queueList) return;
     const url = form.dataset.filaUrl;
@@ -570,6 +600,7 @@
         queuePanel.dataset.podeMarcar = eVerdade(podeMarcar) ? "1" : "0";
       }
       aplicarLimiteFila(data);
+      aplicarStatsAdmin(data);
       atualizarFila(pedidos);
     } catch (_) {
       /* ignore polling errors */

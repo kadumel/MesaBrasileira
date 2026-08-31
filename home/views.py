@@ -2,6 +2,7 @@ import json
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError, transaction
@@ -87,6 +88,56 @@ def _contagem_em_fila(evento_samba):
     if not evento_samba:
         return 0
     return evento_samba.pedidos.filter(tocado=False, rejeitado=False).count()
+
+
+def _percentual(parte, total):
+    if not total:
+        return 0
+    return round(parte * 100 / total)
+
+
+def _total_clientes_cadastrados():
+    """Contas públicas (não staff, superuser nem grupo Equipe)."""
+    User = get_user_model()
+    equipe_ids = User.objects.filter(groups__name=EQUIPE_GROUP_NAME).values("pk")
+    return (
+        User.objects.filter(is_staff=False, is_superuser=False)
+        .exclude(pk__in=equipe_ids)
+        .count()
+    )
+
+
+def _estatisticas_admin(evento):
+    """Resumo da mesa para a vista de administrador em /pedir-musica/."""
+    total_clientes = _total_clientes_cadastrados()
+    if not evento:
+        return {
+            "total_clientes": total_clientes,
+            "total_pedidos": 0,
+            "pedidos_tocados": 0,
+            "pedidos_rejeitados": 0,
+            "percentual_tocados": 0,
+            "percentual_rejeitados": 0,
+            "percentual_em_fila": 0,
+        }
+    agg = evento.pedidos.aggregate(
+        total=Count("id"),
+        tocados=Count("id", filter=Q(tocado=True)),
+        rejeitados=Count("id", filter=Q(rejeitado=True)),
+    )
+    total = agg["total"] or 0
+    tocados = agg["tocados"] or 0
+    rejeitados = agg["rejeitados"] or 0
+    em_fila = max(total - tocados - rejeitados, 0)
+    return {
+        "total_clientes": total_clientes,
+        "total_pedidos": total,
+        "pedidos_tocados": tocados,
+        "pedidos_rejeitados": rejeitados,
+        "percentual_tocados": _percentual(tocados, total),
+        "percentual_rejeitados": _percentual(rejeitados, total),
+        "percentual_em_fila": _percentual(em_fila, total),
+    }
 
 
 def _estado_pedido_utilizador(evento, user):
@@ -219,6 +270,8 @@ def pedir_musica(request):
         "vapid_public_key": vapid_public_key() if pode_marcar else "",
         "nav_active": "pedidos",
     }
+    if pode_marcar:
+        context["stats_admin"] = _estatisticas_admin(context.get("evento_samba"))
     return render(request, "home/pedir_musica.html", context)
 
 
@@ -510,16 +563,17 @@ def fila_pedidos_json(request, evento_id):
         evento.pedidos.select_related("marcado_por", "motivo_rejeicao")
     )[:50]
     data = [_pedido_fila_json(p) for p in pedidos]
-    response = JsonResponse(
-        {
-            "pedidos": data,
-            "pode_marcar": user_pode_marcar(request.user),
-            "limite_em_fila": limite,
-            "total_em_fila": total_em_fila,
-            "fila_cheia": total_em_fila >= limite,
-            **_estado_pedido_utilizador(evento, request.user),
-        }
-    )
+    payload = {
+        "pedidos": data,
+        "pode_marcar": user_pode_marcar(request.user),
+        "limite_em_fila": limite,
+        "total_em_fila": total_em_fila,
+        "fila_cheia": total_em_fila >= limite,
+        **_estado_pedido_utilizador(evento, request.user),
+    }
+    if payload["pode_marcar"]:
+        payload["stats_admin"] = _estatisticas_admin(evento)
+    response = JsonResponse(payload)
     response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response["Pragma"] = "no-cache"
     return response
